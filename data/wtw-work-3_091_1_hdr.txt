@@ -1,0 +1,8 @@
+ID: 091
+cbal: 4
+bk1 distrib: logspace_1.75_32
+bk2 distrib: logspace_1.75_32
+bk1 trial function: showTrials_key2
+bk2 trial function: showTrials_key2
+randSeed: 213474.3495000000111759
+sessionTime: 2016     9     9    12    56    33

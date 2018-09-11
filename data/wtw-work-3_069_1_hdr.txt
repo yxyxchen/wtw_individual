@@ -1,0 +1,8 @@
+ID: 069
+cbal: 1
+bk1 distrib: unif16
+bk2 distrib: unif16
+bk1 trial function: showTrials
+bk2 trial function: showTrials
+randSeed: 213905.3766999999934342
+sessionTime: 2016     7    12     8    58    38

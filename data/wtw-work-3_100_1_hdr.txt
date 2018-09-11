@@ -1,0 +1,8 @@
+ID: 100
+cbal: 3
+bk1 distrib: logspace_1.75_32
+bk2 distrib: logspace_1.75_32
+bk1 trial function: showTrials
+bk2 trial function: showTrials
+randSeed: 206947.8648999999859370
+sessionTime: 2016     9    15    13     5    12

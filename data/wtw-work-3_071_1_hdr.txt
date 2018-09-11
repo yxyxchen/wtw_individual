@@ -1,0 +1,8 @@
+ID: 071
+cbal: 3
+bk1 distrib: logspace_1.75_32
+bk2 distrib: logspace_1.75_32
+bk1 trial function: showTrials
+bk2 trial function: showTrials
+randSeed: 208170.7184999999881256
+sessionTime: 2016     7    13    14     4    28
