@@ -39,7 +39,6 @@ timeTicks = seq(0, tMax, length.out = nTimeStep + 1)
 # next reward = 5
 
 
-
 ########### setting for MS representation ##########
 traceDecay = 0.985 
 # define trace values of step t as 0.95^(t - 1)

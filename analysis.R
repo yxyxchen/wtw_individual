@@ -23,15 +23,19 @@ plotScheduledDelays = F
 plotTrialwiseData = F
 plotKMSC = F
 plotRT = F
+plotWTW = F
 
-# initialize structures to hold group data
+
+# initialize outputs, organised by block
 grpAUC = numeric(length =n * 2)
 earningsByBlock = numeric(length= n * 2)
 condByBlock = vector(length= n * 2)
 FunctionByBlock = vector(length= n * 2)
 wtw = list()
-kmGrid = seq(0, 20, by=0.1) # grid on which to average survival curves.
 
+# para for km analysis
+kmGrid = seq(0, 20, by=0.1) # grid on which to average survival curves.
+tGrid = seq(0, 15* 60, by = 0.1)
 # sc_rising1 = matrix(NA, nrow=n, ncol=length(kmGrid))
 # sc_falling1 = matrix(NA, nrow=n, ncol=length(kmGrid))
 # sc_rising2 = matrix(NA, nrow=n, ncol=length(kmGrid))
@@ -46,27 +50,28 @@ for (sIdx in 1:n) {
   
   # pull this subject's data
   thisID = allIDs[sIdx]
-  
   for (bkIdx in 1:2) {
-    
     thisTrialData = trialData[[thisID]]
     thisBlockIdx = (thisTrialData$blockNum == bkIdx)
     thisTrialData = thisTrialData[thisBlockIdx,]
     thisCond = unique(thisTrialData$condition)
     thisFunction = unique(thisTrialData$trial_function)
-    thisFunction = unique(thisTrialData$trial_function)
-    label = sprintf('Subject %s, Block %d (Cbal %d)',thisID,bkIdx,hdrData$Cbal[sIdx])
+    label = sprintf('Subject %s, Cond %s, Fun %s)',thisID, thisCond, thisFunction)
     
-    # conditionByBlock $ FunctionByBlock
+    #  summarise Cond and Fun in this block
     if(bkIdx == 1){condByBlock[sIdx*2 - 1] = thisCond}
     if(bkIdx == 2){condByBlock[sIdx*2] = thisCond}
     if(bkIdx == 1){FunctionByBlock[sIdx*2 - 1] = thisFunction}
     if(bkIdx == 2){FunctionByBlock[sIdx*2] = thisFunction}
     
-    # earnings in this block
+    # summarise earnings in this block
     if(bkIdx == 1){earningsByBlock[sIdx*2 - 1] = sum(thisTrialData$trialEarnings)}
     if(bkIdx == 2){earningsByBlock[sIdx*2] = sum(thisTrialData$trialEarnings)}
 
+    # plot trial-by-trial data
+    if (plotTrialwiseData) {
+      trialPlots(thisTrialData,label)
+    }
     
     # survival analysis
     tMax = 30 # time window for the survival analysis
@@ -81,10 +86,9 @@ for (sIdx in 1:n) {
     # if (thisCond=='falling' & bkIdx>=3) {sc_falling2[sIdx,] = kmscResults[['kmOnGrid']]}
     # 
     # WTW time series - for an individual block. 
-    tGrid = seq(0, 10*60, by=1) # time grid within the block
     wtwCeiling = 40 # since trials exceeding this duration are infrequent
     # (e.g., 2 perfectly patient individuals could have different results depending what max time they got)
-    wtwtsResults = wtwTS(thisTrialData, tGrid, wtwCeiling)
+    wtwtsResults = wtwTS(thisTrialData, tGrid, wtwCeiling, label, plotWTW)
     if(bkIdx == 1){wtw[[sIdx * 2 -1]] = wtwtsResults}
     if(bkIdx == 2){wtw[[sIdx * 2]] = wtwtsResults}
     # ***Other possible metrics
@@ -93,9 +97,11 @@ for (sIdx in 1:n) {
     #     2nd-half AUC
     
     # wait for input before continuing, if individual plots were requested
-    if (any(plotScheduledDelays, plotTrialwiseData, plotKMSC, plotRT)) {
+    if (any(plotScheduledDelays, plotTrialwiseData, plotKMSC, plotRT, plotWTW)) {
       readline(prompt = paste('subject',thisID,'(hit ENTER to continue)'))
+      graphics.off()
     }
+
   } # loop over blocks
 }
 # organize groupdata 
@@ -121,3 +127,20 @@ for(sIdx in 1 : n){
   # hist(thisTrialData$timeWaited)
   # readline(prompt = paste('subject',thisID,'(hit ENTER to continue)'))
 }
+
+
+# find maxmal and minimal waiting time if quit
+holdOnTimesMin = rep(0, n)
+holdOnTimesMax = rep(0, n)
+for(sIdx in 1 : n){
+  # pull this subject's data
+  thisID = allIDs[sIdx]  
+  thisTrialData = trialData[[thisID]]
+  holdOnTimesMin[sIdx] = min(thisTrialData$scheduledWait)
+  holdOnTimesMax[sIdx] = max(thisTrialData$scheduledWait)
+  
+  
+  # hist(thisTrialData$timeWaited)
+  # readline(prompt = paste('subject',thisID,'(hit ENTER to continue)'))
+}
+
