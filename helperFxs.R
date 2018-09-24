@@ -69,7 +69,7 @@ kmsc <- function(blockData,tMax,blockLabel='',makePlot=FALSE,grid=0) {
   # plot if requested
   if (makePlot) {
     plot(kmT, kmF, type='s', frame.plot=FALSE, xlab='Delay (s)', ylab='Survival rate',
-         main=sprintf('KMSC: subject %s (AUC = %1.1f)',blockLabel,auc), ylim=c(0,1), xlim=c(0,tMax))
+         main=sprintf('KMSC: %s (AUC = %1.1f)',blockLabel,auc), ylim=c(0,1), xlim=c(0,tMax))
   }
   # put the survival curve on a standard grid
   kmOnGrid = vector()
@@ -83,7 +83,7 @@ kmsc <- function(blockData,tMax,blockLabel='',makePlot=FALSE,grid=0) {
 
 
 # willingness to wait time-series
-wtwTS <- function(blockData, tGrid, wtwCeiling) {
+wtwTS <- function(blockData, tGrid, wtwCeiling, blockLabel, plotWTW) {
   trialWTW = numeric(length = nrow(blockData)) # initialize the per-trial estimate of WTW
   quitIdx = blockData$trialEarnings == 0
   # use either the rewardTime (for reward trials) or time waited (for quit trials)
@@ -120,17 +120,16 @@ wtwTS <- function(blockData, tGrid, wtwCeiling) {
   }
   # extend the final value to the end of the vector
   timeWTW[binStartIdx:length(timeWTW)] = trialWTW[thisTrialIdx]
-  
-  return(timeWTW)
-  
+
   ### for testing
   # for testing: plot trialWTW on top of an individual's trialwise plot
-  lines(1:nrow(blockData), trialWTW, col='green', type='o', lwd=2, lty=0, pch=16)
-  # for testing: plot timeWTW
-  plot(tGrid, timeWTW, type='l', ylim=c(0,30), bty='n', col='green', lwd=2, 
-       xlab='Time in block (s)', ylab='WTW (s)', main='WTW time series')
-  browser()
-   
+  if(plotWTW){
+    lines(1:nrow(blockData), trialWTW, col='green', type='o', lwd=2, lty=0, pch=16)
+    # for testing: plot timeWTW
+    plot(tGrid, timeWTW, type='l', ylim=c(0,30), bty='n', col='green', lwd=2, 
+         xlab='Time in block (s)', ylab='WTW (s)', main= sprintf('WTW : %s', blockLabel))
+  }
+  return(timeWTW)
 }
 
 
