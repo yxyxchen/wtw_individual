@@ -107,11 +107,28 @@ for (sIdx in 1:n) {
 # organize groupdata 
 groupData = data.frame(id = rep(allIDs, each = 2), blockNum = rep(c(1,2), n),
                        cbal = rep(hdrData$Cbal, each = 2), condition = condByBlock,
-                       trialFun = FunctionByBlock, AUC = grpAUC)
+                       trialFun = FunctionByBlock, AUC = grpAUC,
+                       totalEarnings = earningsByBlock)
 
-       
+
+
+######### analysis part ########
+# plot theme 
+myTheme = theme(panel.background = element_rect(fill = "white",colour = "white"),
+                panel.grid.minor = element_blank(),
+                panel.grid.major = element_blank()) +
+  theme(axis.line.x = element_line(color="black", size = 0.5),
+        axis.line.y = element_line(color="black", size = 0.5))+ 
+  theme(axis.title=element_text(size=12), title =element_text(size=12, face='bold'), 
+        plot.title = element_text(hjust = 0.5))
 # compare AUC for different environments and trialFun
 summarise(group_by(groupData, condition, trialFun), meanAUC =  mean(AUC))
+
+# plot totalEarnings 
+ggplot(groupData, aes(groupData$totalEarnings)) + geom_histogram(bins = 10) +
+  facet_wrap(~condition, nrow = 1) + xlab('Total earnings') + ylab("Num of blocks") + myTheme + xlim(c(0, 600))
+dir.create('figures')
+ggsave("figures/earningExp.pdf", width = 8, height = 4)
 
 # find maxmal and minimal waiting time if quit
 holdOnTimesMin = rep(0, n)
@@ -122,25 +139,14 @@ for(sIdx in 1 : n){
   thisTrialData = trialData[[thisID]]
   holdOnTimesMin[sIdx] = min(thisTrialData$timeWaited[thisTrialData$trialEarnings == 0])
   holdOnTimesMax[sIdx] = max(thisTrialData$timeWaited[thisTrialData$trialEarnings == 0])
-   
-
   # hist(thisTrialData$timeWaited)
   # readline(prompt = paste('subject',thisID,'(hit ENTER to continue)'))
 }
 
+plotData = data.frame(holdOnTimesMin[holdOnTimesMin != max(holdOnTimesMin)], 
+                      x = holdOnTimesMin[holdOnTimesMin != max(holdOnTimesMin)])
 
-# find maxmal and minimal waiting time if quit
-holdOnTimesMin = rep(0, n)
-holdOnTimesMax = rep(0, n)
-for(sIdx in 1 : n){
-  # pull this subject's data
-  thisID = allIDs[sIdx]  
-  thisTrialData = trialData[[thisID]]
-  holdOnTimesMin[sIdx] = min(thisTrialData$scheduledWait)
-  holdOnTimesMax[sIdx] = max(thisTrialData$scheduledWait)
-  
-  
-  # hist(thisTrialData$timeWaited)
-  # readline(prompt = paste('subject',thisID,'(hit ENTER to continue)'))
-}
+ggplot(plotData, aes(plotData$holdOnTimesMin)) + geom_histogram(bins = 10) + xlab("Time / sec") +
+  ylab('Num of Participants') + ggtitle("Min Wait_Duration Before Quit") + myTheme
+ggsave("theme.pdf", width = 5, height = 4)
 
