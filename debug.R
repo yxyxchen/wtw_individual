@@ -1,18 +1,9 @@
-# this simulation using average payoff
-
-################## read data #################
-# library 
-library('ggplot2')
-library('dplyr')
-library('tidyr')
+##### cond 
 source('optimGoal.R')
+cond = 'log_175_32'
+#cond = 'unif16'
 
-######## determine condition #######
-
-#cond = "unif16"
-cond = "logspace_1.75_32"
-
-########## setting for TD model with eligibility trace #########
+##### setting for TD model
 # time steps
 tMax = ifelse(cond == 'unif16', 16, 32)
 stepDuration = 0.5;
@@ -27,6 +18,7 @@ otherPara = list()
 otherPara[['timeTicks']] = timeTicks
 otherPara[['holdOnSteps']] = holdOnSteps
 otherPara[['stepDuration']] = stepDuration
+
 ########### setting for MS representation ##########
 # trace decay rate
 traceDecay = 0.985 
@@ -51,30 +43,36 @@ MSPara[['traceDecay']]  = traceDecay
 MSPara[['MSMus']] = MSMus
 MSPara[['sigma']]  = sigma
 
-##### 
+#####
 initialSpace = matrix(NA, 5^4, 4)
 initialSpace[,1] = rep(seq(0.1, 1, 0.2), each = 5^3)
-initialSpace[,2] = rep(rep(seq(0.1, 1, 0.2), each = 5^2), 5)
 initialSpace[,3] = rep(rep(seq(0.1, 1, 0.2), each = 5), 5^2)
 initialSpace[,4] = rep(seq(0.1, 1, 0.2), 5^3)
 
-nRep = 5
-totalEarnings = matrix(NA, nrow(initialSpace), nRep)
-for(j in 1 : nRep){
-  for(i in 1:nrow(initialSpace)){
-    para = initialSpace[i,]
-    tempt =  optimGoal(para,MSPara, otherPara, cond)
-    totalEarnings[i, j] = tempt[['totalEarnings']]
-  }  
-}
+# select para
+para = initialSpace[20,]
+para = LPPara
+  
+# 20 is good for unif
+# 100 is a good one for log 
+# 
+outputs = optimGoal(para,MSPara, otherPara, cond)
+ws = outputs[['ws']]
+totalEarnings = outputs[['totalEarnings']]
 
-save(totalEarnings, file = 'HPResults.RData')
-# optimResuts = vector("list", nrow(initialSpace))
-# for(i in 1:nrow(initialSpace)){
-#   optimResuts[[i]] = optim(initialSpace[i,], optimGoal, gr = NULL, MSPara = MSPara, otherPara = otherPara,
-#         cond = cond, lower = c(0, 0, 0, 0), upper = c(1, 1, 1, 1), method = 'L-BFGS-B')
-#   
-# }
+vaWaits = rep(NA, nTimeStep)
+for(t in 1 : nTimeStep){
+  xs = dnorm(traceValues[t], MSMus, sigma) * sigma * traceValues[t]
+  vaWaits[t] = xs %*% ws
+  
+}
+graphics.off()
+vaQuits = rep(vaWaits[1] * para[3], nTimeStep)
+plotData = data.frame(step = rep(1 : nTimeStep, 2), actionValue = c(vaWaits, vaQuits),
+                      action = rep(c('wait', 'quit'), each = nTimeStep))
+ggplot(plotData, aes(x = plotData$step, y = plotData$actionValue, color = action)) + geom_point()  +
+  ylab('Action Value') + xlab("Time step") + myTheme + ggtitle('LP')
+ggsave('figures/lp.pdf', width = 6, height = 4)
 
 
 

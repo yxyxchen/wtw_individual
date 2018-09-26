@@ -47,7 +47,7 @@ drawSample = function(distrib,seq){
   if(distrib == 'unif16'){
     dist[1,] = seq(2, 16, by = 2);
     dist[2,] = rep(1, ncol(dist));
-  }else if(distrib == logspace_1.75_32){
+  }else{
     m = 32; # maximum delay
     fac = 1.75;
     d1 = log(m/(fac^n - 1));
@@ -60,7 +60,9 @@ drawSample = function(distrib,seq){
   # for any of the real distributions
   # find the index of the next sequence element
   nUnique = sum(dist[2,]); # number of elements to randomize
-  seqOutputs = seqAppend(seq,nUnique);
+    seqOutputs = seqAppend(seq,nUnique)
+
+
   nextItem = seqOutputs[['nextItem']]
   seq = seqOutputs[['seq']]
   

@@ -1,10 +1,11 @@
+# use vaWait(s1) to replace vaQuit
 optimGoal = function(para, MSPara, otherPara, cond){
   # 
   phi = para[1]
   tau = para[2]
   gamma = para[3]
   lambda = para[4]
-  
+
   source('taskFxs.R')
   # taskPara
   itiSecs = 2
@@ -21,15 +22,14 @@ optimGoal = function(para, MSPara, otherPara, cond){
   
   # read otherPara
   holdOnSteps = otherPara[['holdOnSteps']]
+  stepDuration = otherPara[['stepDuration']]
   timeTicks = otherPara[['timeTicks']] # begin timepoint of states
   
   # actionList
   actionList = c('wait', 'quit')
   
   # initialize action value, eligibility trace and stat
-  vaQuit = 0
-  eQuit = 0
-  ws = matrix(0, nMS) # weight vector for "wait"
+  ws = rep(0, nMS) # weight vector for "wait"
   es = rep(0, nMS); # es vector for "wait"
   onsetXs = dnorm(traceValues[1], MSMus, sigma) * sigma * traceValues[1]
   xs = onsetXs
@@ -43,7 +43,7 @@ optimGoal = function(para, MSPara, otherPara, cond){
   # initialize outputs 
   trialEarnings = rep(0, 400)
   timeWaited = rep(0, 400)
-  
+
   # loop until time runs out
   while (totalSecs < blockSecs) {
     tIdx = tIdx + 1
@@ -53,21 +53,27 @@ optimGoal = function(para, MSPara, otherPara, cond){
     seq = rewardOutputs[['seq']]
     for(t in 1 : nTimeStep){
       # calculte action value 
+      vaQuit = onsetXs %*% ws * gamma # didn't consider iTi, to stop getting things to complex
       vaWait = xs %*% ws;
       if(t > holdOnSteps){
         # determine action
-        waitRate = exp(vaWait / tau) / sum(exp(vaWait) / tau + exp(vaQuit) / tau)
+        waitRate = exp(vaWait * tau) / sum(exp(vaWait) * tau + exp(vaQuit) * tau)
+        # when gamma is large, sometimes vaWait will be very large, sothat waitRate is NA
+        if(is.na(waitRate)){
+          waitRate = 1
+        }
         action = ifelse(runif(1) < waitRate, 'wait', 'quit')
       }else{
         action = 'wait'  
       }
+      
       # next reward 
       # determine whether reward occurs in the step t
       rewardOccur = rewardDelay < timeTicks[t + 1] &&
         rewardDelay >= timeTicks[t] 
       # if rewarded and wait, 5; otherwise, 0
       nextReward = ifelse(action == 'wait' && rewardOccur, 5, 0) 
-      
+  
       # dertime next state
       # go to the terminate state if at the final step or quit or reward arrives
       if(action == 'wait' && !rewardOccur && t < nTimeStep){
@@ -75,15 +81,13 @@ optimGoal = function(para, MSPara, otherPara, cond){
       }else{
         nextXs  = onsetXs
       }
-      
+   
       # update eligilibity trace
-      es =  gamma * lambda * es + xs;
-      eQuit = gamma * lambda * eQuit + (action == 'quit')
+      es =  gamma * lambda * es + xs * (action == "wait")
       
       # update action value of quit and wait
       delta = nextReward + gamma * max(nextXs %*% ws, vaQuit) - ifelse(action == 'wait', vaWait, vaQuit)
       ws = ws + phi * delta * es
-      vaQuit = vaQuit + phi * delta * eQuit
       
       # update xs
       xs = nextXs
@@ -96,10 +100,14 @@ optimGoal = function(para, MSPara, otherPara, cond){
         rewardDelays[tIdx] = rewardDelay
         break
       }
-    }  
+    }  # loop across timesteps
     # update totalTimes
     totalSecs = totalSecs + itiSecs + ifelse(rewardOccur, rewardDelay, timeWaited[tIdx])
-  }
+  } # loop across trials
     # since time runs out at the last trial 
-    return(-sum(trialEarnings[2 : length(trialEarnings)]))
-}
+    #return(-sum(trialEarnings[2 : length(trialEarnings)]))
+    
+    # 
+    outputs = list("ws" = ws, "totalEarnings" = sum(trialEarnings[2 : length(trialEarnings)]))
+    return(outputs)
+}# end of the function
