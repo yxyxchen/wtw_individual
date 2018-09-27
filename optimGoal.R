@@ -36,6 +36,7 @@ optimGoal = function(para, MSPara, otherPara, cond, nRep = 1){
     s = s + 1
     # initialize action value, eligibility trace and stat
     ws = rep(0, nMS) # weight vector for "wait"
+    #ws[1] = 10 # encourage explore at first
     es = rep(0, nMS); # es vector for "wait"
     onsetXs = dnorm(traceValues[1], MSMus, sigma) * sigma * traceValues[1]
     xs = onsetXs

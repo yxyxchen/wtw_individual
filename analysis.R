@@ -132,13 +132,11 @@ ggsave("figures/earningExp.pdf", width = 8, height = 4)
 
 # find maxmal and minimal waiting time if quit
 holdOnTimesMin = rep(0, n)
-holdOnTimesMax = rep(0, n)
 for(sIdx in 1 : n){
   # pull this subject's data
   thisID = allIDs[sIdx]  
   thisTrialData = trialData[[thisID]]
   holdOnTimesMin[sIdx] = min(thisTrialData$timeWaited[thisTrialData$trialEarnings == 0])
-  holdOnTimesMax[sIdx] = max(thisTrialData$timeWaited[thisTrialData$trialEarnings == 0])
   # hist(thisTrialData$timeWaited)
   # readline(prompt = paste('subject',thisID,'(hit ENTER to continue)'))
 }
