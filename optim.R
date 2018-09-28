@@ -5,73 +5,59 @@
 library('ggplot2')
 library('dplyr')
 library('tidyr')
-source('optimGoal.R')
-
-######## determine condition #######
-#cond = "unif16"
-cond = "logspace_1.75_32"
+source('simulate.R')
+source('getPara.R')
+################ fixed Para ################
+# condition
+cond = "unif16"
+#cond = "logspace_1.75_32"
 sprintf('Condition : %s', cond)
 condName = ifelse(cond == 'unif16', "HP", "LP")
 
-########## setting for TD model with eligibility trace #########
-# time steps
-tMax = ifelse(cond == 'unif16', 16, 32)
-stepDuration = 0.5;
-nTimeStep = tMax / (stepDuration);
-timeTicks = seq(0, tMax, length.out = nTimeStep + 1);
+# other input
+stepDuration = 0.5
+nMS = 10
 
-# don't quit for holdOnsetp
-holdOnSteps = 5
-
-# pass to otherPara
-otherPara = list()
-otherPara[['timeTicks']] = timeTicks
-otherPara[['holdOnSteps']] = holdOnSteps
-otherPara[['stepDuration']] = stepDuration
-
-########### setting for MS representation ##########
-# trace decay rate
-traceDecay = 0.985 
-traceValues = traceDecay ^ ((1 : nTimeStep) - 1)
-
-# mu for MS
-nMS = 10; # number of microstimuli
-junk = seq(1, traceValues[length(traceValues)], length.out = nMS)# mean of the basis function for each MS
-MSMus = vector(length = nMS);
-MSTimeSteps = vector(length = nMS);
-for(i in 1 : length(junk)){
-  MSTimeSteps[i] = order(abs(traceValues - junk[i]))[1]
-  MSMus[i] = traceValues[MSTimeSteps[i] ]
-}
-
-# temporal basis function
-sigma = 0.2; # sd for basis function
-
-# pass to MSPara
-MSPara = list()
-MSPara[['traceDecay']]  = traceDecay
-MSPara[['MSMus']] = MSMus
-MSPara[['sigma']]  = sigma
-
+# output
+otherPara = getOtherPara(cond, stepDuration)
+MSPara = getMSPara(cond, stepDuration, nMS)
 ############# simulate for the distribution of toalEarnings ##########
-initialSpace = matrix(NA, 5^4, 4)
-initialSpace[,1] = rep(seq(0.1, 1, 0.2), each = 5^3)
-initialSpace[,2] = rep(rep(seq(0.1, 1, 0.2), each = 5^2), 5)
-initialSpace[,3] = rep(rep(seq(0.1, 1, 0.2), each = 5), 5^2)
-initialSpace[,4] = rep(seq(0.1, 1, 0.2), 5^3)
+nPara = 5
+nValue = 3
+tMax = otherPara[['tMax']]
+initialSpace = matrix(NA, nValue^nPara, nPara)
+initialSpace[,1] = rep(seq(0.2, 0.8, 0.3), each = nValue^(nPara - 1)) # phi
+initialSpace[,2] = rep(rep(seq(0.2, 0.8, 0.3), each = nValue), nValue^(nPara - 2)) # tau
+initialSpace[,3] = rep(rep(seq(0.2, 0.8, 0.3), each = nValue^2), nValue^(nPara - 3)) 
+initialSpace[,4] = rep(rep(seq(0.2, 0.8, 0.3), each = nValue^3), nValue^(nPara - 4)) 
+initialSpace[,5] = rep(rep(seq(2, 8, 3), each = nValue^4), nValue^(nPara - 5)) 
 
-# check optim.R output before use it  
-nRep = 15
-totalEarnings = matrix(NA, nrow(initialSpace), nRep)
+# set seed
+set.seed(123)
+nRep = 5
+TrialEarnings = array(dim = c(nValue^nPara, nRep, 15 * 60 / stepDuration))
+RewardDelays = array(dim = c(nValue^nPara, nRep, 15 * 60 / stepDuration))
+Ws = array(dim = c(nValue^nPara, nRep, 15 * 60  / stepDuration))
+TimeWaited = array(dim = c(nValue^nPara, nRep, 15 * 60 / stepDuration))
 for(j in 1 : nRep){
   for(i in 1:nrow(initialSpace)){
     para = initialSpace[i,]
-    totalEarnings[i, j]  =  optimGoal(para,MSPara, otherPara, cond)
+    tempt=  simulate(para,MSPara, otherPara, cond)
+    TrialEarnings[i, j,] = tempt[['trialEarnings']]
+    Ws[i, j,] = tempt[['ws']]
+    RewardDelays[i, j,] = tempt[['rewardDelays']]
+    TimeWaited[i, j, ] = tempt[['timeWaited']]
   }  
 }
-fileName = sprintf('%sTotalEarnings.Rdata', condName)
-save(totalEarnings, file = fileName)
+fileName = sprintf('%sTotalEarningsWS.Rdata', condName)
+save( TrialEarnings, Ws, RewardDelays, TimeWaited, file = fileName)
 
+TotalEarnings = matrix(NA, nValue^nPara, nRep)
+for(j in 1 : nRep){
+  for(i in 1:nrow(initialSpace)){
+    TotalEarnings[i, j] = sum(TrialEarnings[i, j, ])
+  }
+}
 ############# find optimal paras using optim
 # set a more sparse 
 initialSpace = matrix(NA, 4^4, 4)
