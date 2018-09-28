@@ -51,10 +51,13 @@ plotData = data.frame(totalEarnings = c(meanHP, meanLP),
                       lambda = initialSpace[,4]
                       )
 
-ggplot(plotData, aes(plotData$totalEarnings)) + geom_histogram(bins = 10) +
+ggplot(plotData, aes(totalEarnings)) + geom_histogram(bins = 10) +
   facet_wrap(~condition, nrow = 1) + xlab('Total earnings') + ylab("Num of simulations") + myTheme 
 ggsave("figures/earningSml.pdf", width = 8, height = 4)
 
+# calculate range
+range(meanHP)
+range(meanLP)
 
 ############ summarise effect of different parameters ###########
 paraNames = c("phi", "tau", "gamma", "lambda")
@@ -95,19 +98,8 @@ for(c in 1:2){
   ggsave(fileName, width = 12, height = 4) 
 }
 
+# look at ws based group by 
+topParas = initialSpace[,]
 
 
-# find best para
-initialSpace = matrix(NA, 5^4, 4)
-initialSpace[,1] = rep(seq(0.1, 1, 0.2), each = 5^3)
-initialSpace[,2] = rep(rep(seq(0.1, 1, 0.2), each = 5^2), 5)
-initialSpace[,3] = rep(rep(seq(0.1, 1, 0.2), each = 5), 5^2)
-initialSpace[,4] = rep(seq(0.1, 1, 0.2), 5^3)
-
-meanHP = rowSums(HPEarnings) / 5
-meanLP = rowSums(LPEarnings) / 5
-max(meanHP)
-max(meanLP)
-HPPara = initialSpace[which(meanHP == max(meanHP)),]
-LPPara = initialSpace[which(meanLP == max(meanLP)),]
 
