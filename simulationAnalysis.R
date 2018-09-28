@@ -31,13 +31,13 @@ myTheme = theme(panel.background = element_rect(fill = "white",colour = "white")
 
 ############ compare with-para and between parameter variance
 aovData = gather(as.data.frame(HPEarnings), key, value)
-aovData$para = rep(1:625, 5)
-fit = aov(value ~ para, aovData)
+aovData$paraComb = rep(1:625, 5)
+fit = aov(value ~ paraComb, aovData)
 summary(fit)
 
 aovData = gather(as.data.frame(LPEarnings), key, value)
-aovData$para = rep(1:625, 5)
-fit = aov(value ~ para, aovData)
+aovData$paraComb = rep(1:625, 5)
+fit = aov(value ~ paraComb, aovData)
 summary(fit)
 
 
