@@ -1,5 +1,5 @@
 
-getOtherPara = function(cond, stepDuration){
+getOtherPara = function(cond, stepDuration, holdOnsteps = 5){
   # time steps
   tMax = ifelse(cond == 'unif16', 16, 32)
   
@@ -17,6 +17,7 @@ getOtherPara = function(cond, stepDuration){
   otherPara[['tMax']] = tMax
   otherPara[['timeTicks']] = timeTicks
   otherPara[['stepDuration']] = stepDuration
+  otherPara[['holdOnSteps']] = holdOnsteps # not used in the new model: simulate.R
   
   # return
   return(otherPara)

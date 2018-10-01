@@ -114,8 +114,11 @@ optimGoal = function(para, MSPara, otherPara, cond, nRep = 1){
     # since time runs out at the last trial 
     outputBuffer[s] = sum(trialEarnings[2 : length(trialEarnings)]);
   }# end of simulations
-  return(mean(outputBuffer))
-  # outputs = list("ws" = ws, "totalEarnings" = sum(trialEarnings[2 : length(trialEarnings)]))
-  # return(outputs)
+  #return(mean(outputBuffer))
+  outputs = list("ws" = ws,
+                 "trialEarnings" = trialEarnings,
+                 "timeWaited" = timeWaited,
+                 "rewardDelays" = rewardDelays)
+  return(outputs)
   
 }# end of the function
