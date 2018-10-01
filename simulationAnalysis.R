@@ -130,23 +130,23 @@ for(c in 1 : 2){
   rewardDelays = matrix(NA, 400, nrow(initialSpace))
   timeWaited = matrix(NA, 400, nrow(initialSpace))
   ws = matrix(NA, nMS, nrow(initialSpace))
-  vaQuits =  matrix(NA, nTimeStep, nrow(initialSpace))
-  vaWaits = matrix(NA, nTimeStep, nrow(initialSpace))
+  #vaQuits =  matrix(NA, nTimeStep, nrow(initialSpace))
+  #vaWaits = matrix(NA, nTimeStep, nrow(initialSpace))
   
   
   for(p in 1 : nrow(initialSpace)){
+    
     thisPara = initialSpace[p, ]
     thisOutputs = optimGoal(thisPara,MSPara, otherPara, cond)
-    
     thisWs = thisOutputs[['ws']]
     ws[,p] = thisWs;
-    trialEarnings[,p] = thisOutputs[['TrialEarnings']]
+    trialEarnings[,p] = thisOutputs[['trialEarnings']]
     rewardDelays[,p] = thisOutputs[['rewardDelays']]
     timeWaited[,p]  = thisOutputs[['timeWaited']]
     
-    thisXs = apply(as.matrix(traceValues), FUN = function(x) dnorm(x, MSMus, sigma) * sigma * x, MARGIN = 1)
-    vaWaits[,p] = as.vector(thisWs %*% thisXs)
-    vaQuits[,p] = rep(vaWaits[1,p] * thisPara[3], nTimeStep) 
+    # thisXs = apply(as.matrix(traceValues), FUN = function(x) dnorm(x, MSMus, sigma) * sigma * x, MARGIN = 1)
+    # vaWaits[,p] = as.vector(thisWs %*% thisXs)
+    # vaQuits[,p] = rep(vaWaits[1,p] * thisPara[3], nTimeStep) 
   }
   
   # output
@@ -155,18 +155,22 @@ for(c in 1 : 2){
     HPRewardDelays = rewardDelays 
     HPTimeWaited = timeWaited
     HPWs = ws
-    HPVaQuits = vaQuits
-    HPVaWaits = vaWaits
+    # HPVaQuits = vaQuits
+    # HPVaWaits = vaWaits
   }else{
     LPTrialEarnings = trialEarnings
     LPRewardDelays = rewardDelays 
     LPTimeWaited = timeWaited
     LPWs = ws
-    LPVaQuits = vaQuits
-    LPVaWaits = vaWaits   
+    # LPVaQuits = vaQuits
+    # LPVaWaits = vaWaits   
   }
 }
 
+fileName = 'QFullSimul.Rdata'
+save(HPTrialEarnings, HPRewardDelays, HPTimeWaited, HPWs,
+     LPTrialEarnings, LPRewardDelays, LPTimeWaited, LPWs,
+    file = fileName)
 
 
 # select para combs 
