@@ -7,6 +7,10 @@ library('dplyr')
 library('tidyr')
 source('simulate.R')
 source('getPara.R')
+############# game environments 
+iti = 2
+blockMins = 15
+blockSecs = blockMins * 60
 ################ fixed Para ################
 # condition
 cond = "unif16"
@@ -34,11 +38,12 @@ initialSpace[,5] = rep(rep(seq(2, 8, 3), each = nValue^4), nValue^(nPara - 5))
 
 # set seed
 set.seed(123)
+# simualte 
 nRep = 5
-TrialEarnings = array(dim = c(nValue^nPara, nRep, 15 * 60 / stepDuration))
-RewardDelays = array(dim = c(nValue^nPara, nRep, 15 * 60 / stepDuration))
-Ws = array(dim = c(nValue^nPara, nRep, 15 * 60  / stepDuration))
-TimeWaited = array(dim = c(nValue^nPara, nRep, 15 * 60 / stepDuration))
+TrialEarnings = array(dim = c(nValue^nPara, nRep, blockSecs / iti + 1))
+RewardDelays = array(dim = c(nValue^nPara, nRep, blockSecs / iti + 1))
+Ws = array(dim = c(nValue^nPara, nRep, nMS))
+TimeWaited = array(dim = c(nValue^nPara, nRep, blockSecs / iti + 1))
 for(j in 1 : nRep){
   for(i in 1:nrow(initialSpace)){
     para = initialSpace[i,]
@@ -49,8 +54,25 @@ for(j in 1 : nRep){
     TimeWaited[i, j, ] = tempt[['timeWaited']]
   }  
 }
-fileName = sprintf('%sTotalEarningsWS.Rdata', condName)
-save( TrialEarnings, Ws, RewardDelays, TimeWaited, file = fileName)
+
+# organize outputs 
+outputData = list("ws" = Ws, "timeWaited" = TimeWaited,
+                 "rewardDelays" = RewardDelays, "trialEarnings" = TrialEarnings 
+                 )
+if(cond == "unif16"){
+  rawHPData = outputData 
+}else{
+  rawLPData = outputData   
+}
+
+# save
+fileName = sprintf('QStarData/raw%sData.Rdata', condName)
+if(cond == "unif16"){
+  save(rawHPData,file = fileName)
+}else{
+  save(rawLPData,file = fileName) 
+}
+
 
 TotalEarnings = matrix(NA, nValue^nPara, nRep)
 for(j in 1 : nRep){

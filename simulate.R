@@ -20,6 +20,7 @@ simulate= function(para, MSPara, otherPara, cond){
   nTimeStep = tMax / stepDuration
   
   # read MSPara
+  nMS = MSPara$nMS
   sigma = MSPara[['sigma']]
   MSMus = MSPara[['MSMus']]
   traceDecay = MSPara[['traceDecay']]
@@ -41,16 +42,16 @@ simulate= function(para, MSPara, otherPara, cond){
   # initialize time and reward seq
   totalSecs = 0
   seq = c()
-  rewardDelays = rep(0, blockSecs / stepDuration)
+  rewardDelays = rep(0, blockSecs / iti + 1)
   tIdx = 0
   stepGap = 1 # since es = 0 initially, so this value is abitratry
   
   # initialize outputs 
-  trialEarnings = rep(0, blockSecs / stepDuration)
-  timeWaited = rep(0, blockSecs / stepDuration)
+  trialEarnings = rep(0, blockSecs / iti + 1)
+  timeWaited = rep(0, blockSecs / iti + 1)
   
   # loop until time runs out
-      while(totalSecs < blockSecs) {
+      while(totalSecs <= blockSecs) {
         tIdx = tIdx + 1
         # sample rewardDelay
         rewardOutputs = drawSample(cond, seq)
@@ -58,6 +59,7 @@ simulate= function(para, MSPara, otherPara, cond){
         seq = rewardOutputs[['seq']]
         
         # calculaye available time steps
+        # since we use floor there maybe 0.5 sec error 
         nAvaStep = min(floor((blockSecs - totalSecs) / stepDuration), nTimeStep)
         
         # if near the block end, the check total Secs everytime
@@ -75,7 +77,9 @@ simulate= function(para, MSPara, otherPara, cond){
           
           # next reward 
           # determine whether reward occurs in the step t
-          rewardOccur = rewardDelay < timeTicks[t + 1] && rewardDelay >= timeTicks[t] 
+          # the previous code is wrong, since rewards happens on 16s seconds woudldn't be counted 
+          rewardOccur = rewardDelay <= timeTicks[t + 1] && rewardDelay > timeTicks[t] 
+          
           # if rewarded and wait, 5; otherwise, 0
           nextReward = ifelse(action == 'wait' && rewardOccur, 5, 0) 
           

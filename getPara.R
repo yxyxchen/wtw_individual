@@ -47,6 +47,7 @@ getMSPara = function(cond, stepDuration, nMS){
   MSPara[['traceDecay']]  = traceDecay
   MSPara[['MSMus']] = MSMus
   MSPara[['sigma']]  = sigma
+  MSPara[["nMS"]] = nMS
   
   # return
   return(MSPara)
