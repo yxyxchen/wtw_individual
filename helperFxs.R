@@ -2,7 +2,11 @@
 # helperFxs.R
 # varying-magnitude WTW
 
+library("ggplot2")
+source("plotTheme.R")
+source("wtwSettings.R")
 
+("plotTheme.R")
 
 # check the distribution of scheduled delays
 # ...as measured in number of key presses (for the instrumental version of the task)
@@ -67,9 +71,13 @@ kmsc <- function(blockData,tMax,blockLabel='',makePlot=FALSE,grid=0) {
   # calculate auc
   auc <- sum(diff(kmT) * head(kmF,-1))
   # plot if requested
+  plotData = data.frame(kmT = kmT, kmF = kmF)
   if (makePlot) {
-    plot(kmT, kmF, type='s', frame.plot=FALSE, xlab='Delay (s)', ylab='Survival rate',
-         main=sprintf('KMSC: %s (AUC = %1.1f)',blockLabel,auc), ylim=c(0,1), xlim=c(0,tMax))
+   p = ggplot(plotData, aes(kmT, kmF)) + geom_line() + xlab('Delay (s)') +
+      ylab('Survival rate') + ylim(c(0,1)) + xlim(c(0,tMax)) +
+        ggtitle(sprintf('KMSC: %s (AUC = %1.1f)',blockLabel,auc)) + 
+        displayTheme
+   print(p)
   }
   # put the survival curve on a standard grid
   kmOnGrid = vector()
@@ -124,15 +132,39 @@ wtwTS <- function(blockData, tGrid, wtwCeiling, blockLabel, plotWTW) {
   ### for testing
   # for testing: plot trialWTW on top of an individual's trialwise plot
   if(plotWTW){
-    lines(1:nrow(blockData), trialWTW, col='green', type='o', lwd=2, lty=0, pch=16)
     # for testing: plot timeWTW
-    plot(tGrid, timeWTW, type='l', ylim=c(0,30), bty='n', col='green', lwd=2, 
-         xlab='Time in block (s)', ylab='WTW (s)', main= sprintf('WTW : %s', blockLabel))
+    p = ggplot(data.frame(tGrid, timeWTW), aes(tGrid, timeWTW)) + geom_line() +
+      xlab("Time in block (s)") + ylab("WTW (s)") + ggtitle(sprintf('WTW : %s', blockLabel)) +
+      displayTheme
+    print(p)
   }
   return(timeWTW)
 }
 
 
+getTimeEarnings = function(blockData, tGrid, blockLabel, plotTimeEarnings){
+  trialEarings = blockData$trialEarnings
+  sellingTime = blockData$sellTime
+  
+  # adjust beginning end the end 
+  sellingTime = c(0, sellingTime, blockSecs)
+  trialEarings = c(0, trialEarings, trialEarings[length(trialEarings)])
+  outputs = approx(sellingTime, cumsum(trialEarings),xout = tGrid,
+                   method = "constant")
+  
+  # plot
+  if(plotTimeEarnings){
+    plotData = data.frame(tGrid = outputs$x, cumEarnings = outputs$y)
+    p = ggplot(plotData,aes(tGrid, cumEarnings)) + geom_line() +
+      xlab("Time in block (s)") + ylab("Cumulative earnings") +
+      ggtitle(sprintf('timeEarnings: %s', blockLabel)) + displayTheme   
+    print(p)
+  }
+
+  # return
+  timeEarnings = outputs$y
+  return(timeEarnings)
+}
 
 rewardRT <- function(blockData, blockLabel, makePlot) {
   # identify positive or negative outcome trials, get delay and RT
