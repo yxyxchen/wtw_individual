@@ -31,8 +31,8 @@ plotTimeEarnings = T
 # initialize outputs, organised by block
 grpAUC = numeric(length =n * 2)
 earningsByBlock = numeric(length= n * 2)
-condByBlock = vector(NA, length= n * 2)
-FunctionByBlock = vector(NA, length= n * 2)
+condByBlock = vector(length= n * 2)
+FunctionByBlock = vector(length= n * 2)
 wtw = matrix(NA, length(tGrid), n * 2)
 cumEarn = matrix(NA, length(tGrid), n * 2)
 
