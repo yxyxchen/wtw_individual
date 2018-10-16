@@ -1,5 +1,5 @@
 # add number of repeation
-simulate= function(para, MSPara, otherPara, cond){
+QStarModel = function(para, MSPara, otherPara, cond){
   # 
   phi = para[1]
   tau = para[2]
@@ -7,11 +7,9 @@ simulate= function(para, MSPara, otherPara, cond){
   lambda = para[4]
   wIni = para[5]
 
+  # task para
   source('taskFxs.R')
-  # taskPara
-  itiSecs = 2
-  blockMins = 15
-  blockSecs = blockMins * 60
+  source("wtwSettings.R")
   
   # read otherPara
   tMax= otherPara[['tMax']]
@@ -39,6 +37,11 @@ simulate= function(para, MSPara, otherPara, cond){
   onsetXs = dnorm(traceValues[1], MSMus, sigma) * sigma * traceValues[1]
   xs = onsetXs
   
+  # additionally initialize vaWaits and vaQuits
+  vaWaits = matrix(NA, tMax / stepDuration, blockSecs / iti + 1);
+  vaQuits = matrix(NA, tMax / stepDuration, blockSecs / iti + 1);
+  endTimes = rep(NA, length = (blockSecs / iti + 1))
+  
   # initialize time and reward seq
   totalSecs = 0
   seq = c()
@@ -51,7 +54,7 @@ simulate= function(para, MSPara, otherPara, cond){
   timeWaited = rep(0, blockSecs / iti + 1)
   
   # loop until time runs out
-      while(totalSecs <= blockSecs) {
+      while(totalSecs < blockSecs) {
         tIdx = tIdx + 1
         # sample rewardDelay
         rewardOutputs = drawSample(cond, seq)
@@ -59,14 +62,17 @@ simulate= function(para, MSPara, otherPara, cond){
         seq = rewardOutputs[['seq']]
         
         # calculaye available time steps
-        # since we use floor there maybe 0.5 sec error 
+        # since we use floor there maybe 0.5 sec error (less than 90 s)
         nAvaStep = min(floor((blockSecs - totalSecs) / stepDuration), nTimeStep)
         
         # if near the block end, the check total Secs everytime
         for(t in 1 : nAvaStep){
           # calculte action value 
-          vaQuit = onsetXs %*% ws * gamma^(itiSecs / stepDuration) # didn't consider iTi, to stop getting things to complex
+          vaQuit = onsetXs %*% ws * gamma^(iti / stepDuration) # didn't consider iTi, to stop getting things to complex
           vaWait = xs %*% ws;
+          vaQuits[t, tIdx] = vaQuit;
+          vaWaits[t, tIdx] = vaWait;
+          
           # determine action
           waitRate = exp(vaWait * tau) / sum(exp(vaWait) * tau + exp(vaQuit) * tau)
           # when gamma is large, sometimes vaWait will be very large, sothat waitRate is NA
@@ -94,14 +100,15 @@ simulate= function(para, MSPara, otherPara, cond){
           
           # update eligilibity trace
           # here stepGap meatured between At and At-1
-          es =  gamma^stepGap * lambda * es + xs * (action == "wait")
+          es =  gamma^stepGap * lambda * es + xs * c(action == "wait")
           
           # update stepGap
-          stepGap = ifelse(trialGoOn, 1, itiSecs / stepDuration)
+          stepGap = ifelse(trialGoOn, 1, iti / stepDuration)
           
           # update action value of quit and wait
           # here stepGap meatured between At and At+1
-          delta = nextReward + gamma^(stepGap) * max(nextXs %*% ws, vaQuit) - ifelse(action == 'wait', vaWait, vaQuit)
+          delta = nextReward + c(gamma^(stepGap) * max(nextXs %*% ws, vaQuit) -
+                                           ifelse(action == 'wait', vaWait, vaQuit))
           ws = ws + phi * delta * es
           
           # update xs and stepGap
@@ -117,13 +124,33 @@ simulate= function(para, MSPara, otherPara, cond){
             break
           }
         }  # one trial end
-        totalSecs = totalSecs + itiSecs + ifelse(rewardOccur, rewardDelay, timeWaited[tIdx])
+        totalSecs = totalSecs + iti+ ifelse(rewardOccur, rewardDelay, timeWaited[tIdx])
+        endTimes[tIdx] = totalSecs
       } # simulation end
       outputs = list("ws" = ws,
                      "trialEarnings" = trialEarnings,
                      "timeWaited" = timeWaited,
-                     "rewardDelays" = rewardDelays)
+                     "rewardDelays" = rewardDelays,
+                     "vaWaits" = vaWaits,
+                     "vaQuits" = vaQuits)
       return(outputs)
 } #end of the function
 
+# 
+# waitDuration =timeWaited
+# rewardDelay = rewardDelays
+# quitIdx = (trialEarnings == 0)
+# 
+# waitDuration[is.na(waitDuration)] = rewardDelay[is.na(waitDuration)]
+# endTick = match(0,rewardDelay)
+# waitDuration = waitDuration[1 : (endTick - 1)]
+# quitIdx = quitIdx[1 : (endTick - 1)]
+# 
+# sellTime = cumsum(waitDuration);
+# itiTime = rep(iti, length(waitDuration))
+# itiTime = c(0, itiTime[2 : length(itiTime)]) # itiTime before the ith step
+# itiTime = cumsum(itiTime)
+# sellTime = sellTime + itiTime
+# 
+# a = data.frame(endTimes[1:length(sellTime)], sellTime, timeWaited[1:length(sellTime)])
 

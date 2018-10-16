@@ -5,26 +5,29 @@
 library('ggplot2')
 library('dplyr')
 library('tidyr')
-source('simulate.R')
-source('getPara.R')
-############# game environments 
-iti = 2
-blockMins = 15
-blockSecs = blockMins * 60
-################ fixed Para ################
-# condition
-cond = "unif16"
-#cond = "logspace_1.75_32"
-sprintf('Condition : %s', cond)
-condName = ifelse(cond == 'unif16', "HP", "LP")
+source('simulate.R') # QStar model
+source('wtwSettings.R') # wtw settings for both HP and LP
+                        # can't change
+source('getPara.R') # functions to get MSPara and otherPara from inputs and wtwSettings
+                    # can change for different MS model, and 
+
+################ input ################
+# cond input
+condIdx = 1
+cond = conditions[condIdx];
+condName = conditionNames[condIdx]
+condColor = conditionColors[condIdx]
+sprintf('Condition : %s %s', cond, condName)
 
 # other input
 stepDuration = 0.5
 nMS = 10
+traceDecay = 0.985
+sigma = 0.2
 
-# output
+# genrate
 otherPara = getOtherPara(cond, stepDuration)
-MSPara = getMSPara(cond, stepDuration, nMS)
+MSPara = getMSPara(cond, stepDuration, nMS, traceDecay, sigma)
 ############# simulate for the distribution of toalEarnings ##########
 nPara = 5
 nValue = 3
@@ -44,62 +47,48 @@ TrialEarnings = array(dim = c(nValue^nPara, nRep, blockSecs / iti + 1))
 RewardDelays = array(dim = c(nValue^nPara, nRep, blockSecs / iti + 1))
 Ws = array(dim = c(nValue^nPara, nRep, nMS))
 TimeWaited = array(dim = c(nValue^nPara, nRep, blockSecs / iti + 1))
+vaQuits = array(dim = c(nValue^nPara, nRep, tMax / stepDuration, blockSecs / iti + 1))
+vaWaits = array(dim = c(nValue^nPara, nRep, tMax / stepDuration, blockSecs / iti + 1))
 for(j in 1 : nRep){
   for(i in 1:nrow(initialSpace)){
     para = initialSpace[i,]
-    tempt=  simulate(para,MSPara, otherPara, cond)
+    tempt=  QStarModel(para,MSPara, otherPara, cond)
     TrialEarnings[i, j,] = tempt[['trialEarnings']]
     Ws[i, j,] = tempt[['ws']]
     RewardDelays[i, j,] = tempt[['rewardDelays']]
     TimeWaited[i, j, ] = tempt[['timeWaited']]
+    vaQuits[i, j,  , ] = tempt[['vaQuits']]
+    vaWaits[i, j, ,  ] = tempt[['vaWaits']]
   }  
 }
 
-# organize outputs 
+# organize and save outputs 
 outputData = list("ws" = Ws, "timeWaited" = TimeWaited,
-                 "rewardDelays" = RewardDelays, "trialEarnings" = TrialEarnings 
+                 "rewardDelays" = RewardDelays, "trialEarnings" = TrialEarnings,
+                 "vaWaits" = vaWaits, "vaQuits" = vaQuits
                  )
-if(cond == "unif16"){
-  rawHPData = outputData 
-}else{
-  rawLPData = outputData   
+
+if(cond == "unif16") rawHPData = outputData else rawLPData = outputData   
+
+fileName = sprintf('QStarData/raw%sData.RData', condName)
+if(cond == "unif16") save(rawHPData,file = fileName) else save(rawLPData,file = fileName) 
+
+
+######## generate hdrData ######
+# hdrData include otherPara, MSPara
+# also nTimeStep and TraceValue 
+# therefore, no need to call getPara in later analysis anymore
+stepDuration = 0.5
+source("getPara.R")
+for(c in 1: 2){
+  cond = conditions[c]
+  otherPara = getOtherPara(cond, stepDuration)
+  MSPara = getMSPara(cond, stepDuration, nMS, traceDecay, sigma)  
+  hdrData = c(otherPara, MSPara)
+  hdrData$nTimeStep = hdrData$tMax / hdrData$stepDuration
+  hdrData$traceValues = hdrData$traceDecay ^ ( 1 :   hdrData$nTimeStep - 1)
+  if(cond == 'unif16') hdrHPData= hdrData else  hdrLPData= hdrData
 }
-
-# save
-fileName = sprintf('QStarData/raw%sData.Rdata', condName)
-if(cond == "unif16"){
-  save(rawHPData,file = fileName)
-}else{
-  save(rawLPData,file = fileName) 
-}
-
-
-TotalEarnings = matrix(NA, nValue^nPara, nRep)
-for(j in 1 : nRep){
-  for(i in 1:nrow(initialSpace)){
-    TotalEarnings[i, j] = sum(TrialEarnings[i, j, ])
-  }
-}
-############# find optimal paras using optim
-# set a more sparse 
-initialSpace = matrix(NA, 4^4, 4)
-initialSpace[,1] = rep(seq(0.1, 1, 0.3), each = 5^3)
-initialSpace[,2] = rep(rep(seq(0.1, 1, 0.2), each = 5^2), 5)
-initialSpace[,3] = rep(rep(seq(0.1, 1, 0.2), each = 5), 5^2)
-initialSpace[,4] = rep(seq(0.1, 1, 0.2), 5^3)
-# optimResuts = vector("list", nrow(initialSpace))
-for(i in 1:nrow(initialSpace)){
-  optimResuts[[i]] = optim(initialSpace[i,], optimGoal, gr = NULL, MSPara = MSPara, otherPara = otherPara,
-        cond = cond, lower = c(0, 0, 0, 0), upper = c(1, 1, 1, 1), method = 'L-BFGS-B')
-
-}
-
-system.time({
-  optim(initialSpace[i,], optimGoal, gr = NULL, MSPara = MSPara, otherPara = otherPara, nRep = 5,
-                           cond = cond, lower = c(0, 0, 0, 0), upper = c(1, 1, 1, 1), method = 'L-BFGS-B') 
-}
-)
-
-
+save(hdrHPData, hdrLPData, file = 'QStarData/hdrData.RData')
 
 

@@ -4,8 +4,9 @@
 library("ggplot2")
 library("dplyr")
 library("tidyr")
-library("Scale")
 library('scales')
+source('plotTheme.R')
+source('wtwSettings.R')
 
 # initialSpace
 nPara = 5
@@ -19,111 +20,30 @@ initialSpace[,3] = rep(rep(seq(0.2, 0.8, 0.3), each = nValue^2), nValue^(nPara -
 initialSpace[,4] = rep(rep(seq(0.2, 0.8, 0.3), each = nValue^3), nValue^(nPara - 4)) 
 initialSpace[,5] = rep(rep(seq(2, 8, 3), each = nValue^4), nValue^(nPara - 5)) 
 
-# load totalEarnings data
-load('HPTotalEarningsWS.RData')
-rawHPData = list(rwardDelays = RewardDelays,
-                    timeWaited = TimeWaited,
-                    trialEarnings = TrialEarnings,
-                    ws = Ws[,,1:10])
-rm("Ws", "RewardDelays", "TimeWaited", "TrialEarnings")
-
-load('LPTotalEarningsWS.RData')
-rawLPData = list(rwardDelays = RewardDelays,
-                    timeWaited = TimeWaited,
-                    trialEarnings = TrialEarnings,
-                    ws = Ws[,,1:10])
-rm("Ws", "RewardDelays", "TimeWaited", "TrialEarnings")
-
-# plot theme 
-myTheme = theme(panel.background = element_rect(fill = "white",colour = "white"),
-                panel.grid.minor = element_blank(),
-                panel.grid.major = element_blank()) +
-  theme(axis.line.x = element_line(color="black", size = 2),
-        axis.line.y = element_line(color="black", size = 2))+ 
-  theme(axis.title=element_text(size=25), title =element_text(size=30, face='bold'), 
-        plot.title = element_text(hjust = 0.5)) + 
-  theme(axis.title=element_text(size=25), title =element_text(size=25, face='bold'),
-        axis.text = element_text(size=25), axis.line= element_line(color="black", size = 2)) +
-  theme(strip.text = element_text(face="bold", size=20)) + 
-  theme(legend.text=element_text(size= 25))
-
-### analysis parameters 
-conditions = c('unif16', "log_1.75_32")
-conditionNames = c("HP", "LP")
-conditionColors = c("#7b3294", "#008837")
-
-###### get hdrData
-nMS = 10
-stepDuration = 0.5
-source("getPara.R")
-for(c in 1: 2){
-  cond = conditions[c]
-  otherPara = getOtherPara(cond, stepDuration)
-  MSPara = getMSPara(cond, stepDuration, nMS)  
-  hdrData = c(otherPara, MSPara)
-  hdrData$nTimeStep = hdrData$tMax / hdrData$stepDuration
-  hdrData$traceValues = hdrData$traceDecay ^ ( 1 :   hdrData$nTimeStep - 1)
-  if(cond == 'unif16') hdrHPData= hdrData else  hdrLPData= hdrData
-}
-save(hdrHPData, hdrLPData, file = 'QStarData/hdrData.RData')
-
-####### get HPData and LPData
-for(c in 1:2){
-  cond = conditions[c]
-  if(cond == 'unif16'){
-    inputData = rawHPData 
-    hdrData = hdrHPData
-  }else{
-    inputData  = rawLPData
-    hdrData = hdrLPData
-  }
- 
-  # earnings and ws
-  tempt = apply(inputData$trialEarnings, FUN = sum, MARGIN = c(1,2))
-  earnings = rowSums(tempt) / ncol(tempt)
-  ws = apply(inputData$ws, c(1,3), mean)
-  
-  #
-  xs = apply(as.matrix(hdrData$traceValues), MARGIN  = 1, FUN = function(x)
-    dnorm(x, hdrData$MSMus, hdrData$sigma)*hdrData$sigma * x) 
-  vaWaits = t(ws %*% xs)    
-  vaQuits = vaWaits[1,] * initialSpace[,3]^4
-  
-  temptVaQuits = matrix(rep(vaQuits, each = hdrData$nTimeStep), nrow =hdrData$nTimeStep) 
-  taus = initialSpace[,3]
-  taus = matrix(rep(taus, each = hdrData$nTimeStep), nrow = hdrData$nTimeStep)
-  # wait probability 
-  
-  waitProbs =   1 / (1 + exp((temptVaQuits - vaWaits) * taus))
-  survivalProbs = apply(waitProbs, MARGIN =  2, FUN= cumprod)
-  
-  # outpput
-  outputData = list( "earnigs" = earnings, "ws" = ws,
-                     "vaQuits" = vaQuits, "vaWaits" = vaWaits, 
-                     "waitProbs" = waitProbs, "survivalProbs" = survivalProbs)
-  if(cond == 'unif16') HPData = outputData  else  LPData = outputData 
-}
-dir.create('QStarData')
-save(HPData, LPData, file = 'QStarData/data.RData')
-
-############ plot distribution of earnings 
-plotData = data.frame(totalEarnings = c(HPData$earnigs, LPData$earnigs),
+#### 
+load('QStarData/colpData.RData')
+load('QStarData/hdrData.RData')
+load('QStarData/rawHPData.RData')
+load('QStarData/rawLPData.RData')
+####
+####### plot distribution of totalEarnings
+plotData = data.frame(totalEarnings = c(colpHPData$totalEarnings, colpLPData$totalEarnings),
                       condition = rep(c("HP", "LP"), each = nComb), phi = initialSpace[,1],
                       tau = initialSpace[,2], gamma = initialSpace[,3],
                       lambda = initialSpace[,4], wIni = initialSpace[,5]
 )
 
 ggplot(plotData, aes(totalEarnings)) + geom_histogram(bins = 15) +
-  facet_wrap(~condition, nrow = 1) + xlab('Total earnings') + ylab("Num of simulations") + myTheme + xlim(c(0, 600)) +
-  ylim(c(0, 55))
-#dir.create("new_figures")
-ggsave("new_figures/earningSml.pdf", width = 16, height = 8)
+  facet_wrap(~condition, nrow = 1) + xlab('Total earnings') + ylab("Num of simulations") + saveTheme + xlim(c(0, 600))
+dir.create("QStar_figures")
+ggsave("QStar_figures/earningSml.pdf", width = 16, height = 8)
 
 # calculate range
-range(HPData$earnigs)
-range(LPData$earnigs)
+summarise(group_by(plotData, condition),
+          minEarning = min(totalEarnings),
+          maxEarning = max(totalEarnings))
 
-############ summarise effect of different parameters ###########
+############ summarise para effects on total earnings ###########
 nPara = 5
 nValue = 3
 paraNames = c("phi", "tau", "gamma", "lambda", "wIni")
@@ -151,17 +71,15 @@ summaryData$ymin = mu - std
 summaryData$ymax = mu + std
 
 # plot for HP
-
 for(c in 1:2){
   cond = conditionNames[c]
   ggplot(summaryData[summaryData$condition == cond,], aes(factor(paraValues), mu)) +
     geom_bar(stat = "identity", width=0.5, fill = conditionColors[c]) + geom_errorbar(aes(ymin = ymin, ymax = ymax), width=.2)+
-    facet_wrap(~paraNames, nrow = 1)+ myTheme +
+    facet_wrap(~paraNames, nrow = 1)+ saveTheme +
     xlab("Parameter value") + ylab("Total Earnings") + ggtitle(cond) 
-  fileName = sprintf("new_figures/paraEffect%s.pdf", cond)
+  fileName = sprintf("QStar_figures/paraEffect%s.pdf", cond)
   ggsave(fileName, width = 16, height = 8) 
 }
-
 
 ############ look at ws group by totalEanrings #########
 perc = 0.1
@@ -171,123 +89,110 @@ rankings = c('Top', 'Bottom')
 for(c in 1 : 2){
   cond = conditions[c]
   condName = conditionNames[c]
-  if(cond == 'unif16'){
-    inputData = HPData
+  condColor = conditionColors[c]
+  
+  if(condName == 'HP'){
     hdrData = hdrHPData
+    inputData = colpHPData
   }else{
-    inputData = LPData
     hdrData = hdrLPData
+    inputData = colpLPData  
   }
   
   for(r in 1:2){
     ranking = rankings[r]
-    tempt = order(inputData$earnigs, decreasing = (ranking == 'Top'))
-    hist(inputData$earnigs[tempt[1:nUse]])
-    UseVaWaits = inputData$vaWaits[,tempt[1:nUse]]
-    UseVaQuits = matrix(rep(inputData$vaQuits[tempt[1:nUse]],
-                            each = hdrData$nTimeStep), hdrData$nTimeStep)
+    tempt = order(inputData$totalEarnings, decreasing = (ranking == 'Top'))
+    UseVaWaits = inputData$vaWaits[tempt[1:nUse],]
+    UseVaQuits= inputData$vaQuits[tempt[1:nUse],]
+
 
     # plot
-    vas = rbind(UseVaWaits, UseVaQuits)
-    meanValues = apply(vas, FUN = mean, MARGIN = 1)
-    stdValues = apply(vas, FUN = sd, MARGIN = 1)
+    vas = cbind(UseVaWaits, UseVaQuits)
+    meanValues = apply(vas, FUN = function(x) mean(x[!is.na(x)]), MARGIN = 2)
+    stdValues = apply(vas, FUN = function(x) sd(x[!is.na(x)]), MARGIN = 2)
     maxValues = meanValues + stdValues
     minValues = meanValues - stdValues
     actions = factor(rep(c('wait', 'quit'), each = hdrData$nTimeStep), levels = c('wait', 'quit'))
     plotData = data.frame(meanValues, stdValues, maxValues, minValues, 
-                          timeSteps = rep(seq(1,hdrData$nTimeStep),2), actions  )
+                          timeSteps = rep(seq(1,hdrData$nTimeStep),2), actions )
     graphics.off()
     titleText = sprintf("%s, %s%s total earnings",condName, ranking, percent(perc))
-    ggplot(plotData, aes(timeSteps, meanValues, linetype = actions))+
+    ggplot(plotData, aes(timeSteps, meanValues, linetype = actions)) + 
       geom_ribbon(data = plotData[plotData$actions == 'wait',], aes(ymin=minValues, ymax=maxValues),linetype=0, alpha = 0.1, color = "#bababa") +
       geom_ribbon(data = plotData[plotData$actions == 'quit',], aes(ymin=minValues, ymax=maxValues),linetype=0, alpha = 0.1, color = "#bababa") + 
-      geom_line(color = conditionColors[c], size = 1) + 
-      xlab('Time step') + ylab('Action value') + ggtitle(titleText)+ myTheme + scale_linetype_discrete(name = "Action") + 
-      coord_cartesian(ylim=c(-2,5)) 
-    
-    fileName = sprintf('new_figures/actionValue%s%s.pdf', condName, ranking)
+      geom_line(color = conditionColors[c], size = 1) + xlab('Time step') + ylab('Action value') + ggtitle(titleText)+ saveTheme +
+      scale_linetype_discrete(name = "Action") 
+    #coord_cartesian(ylim=c(-2,5)) 
+    fileName = sprintf('QStar_figures/actionValue%s%s.pdf', condName, ranking)
     ggsave(file = fileName, width = 10, height = 6)
   }
 }
 
-####### plot wait probility ########
-perc = 0.1
-nUse= floor(nComb* perc);
-rankings = c('Top', 'Bottom')
-for(c in 1 : 2){
-  cond = conditions[c]
-  condName = conditionNames[c]
-  if(cond == 'unif16'){
-    inputData = HPData
-    hdrData = hdrHPData
-  }else{
-    inputData = LPData
-    hdrData = hdrLPData
-  }
-  
-  for(r in 1:2){
-    ranking = rankings[r]
-    tempt = order(inputData$earnigs, decreasing = (ranking == 'Top'))
-    vas= inputData$waitProbs[,tempt[1:nUse]]
-    
-    # plot
-    meanValues = apply(vas, FUN = mean, MARGIN = 1)
-    stdValues = apply(vas, FUN = sd, MARGIN = 1)
-    maxValues = meanValues + stdValues
-    minValues = meanValues - stdValues
-    plotData = data.frame(meanValues, stdValues, maxValues, minValues, 
-                          timeSteps = seq(1,hdrData$nTimeStep), actions  )
-    graphics.off()
-    titleText = sprintf("%s, %s%s total earnings",condName, ranking, percent(perc))
-    ggplot(plotData, aes(timeSteps, meanValues))+
-      geom_ribbon(aes(ymin=minValues, ymax=maxValues),linetype=0, alpha = 0.1, color = "#bababa") +
-      geom_line(color = conditionColors[c], size = 1) + 
-      xlab('Time step') + ylab('Wait prob') + ggtitle(titleText)+ myTheme +  coord_cartesian(ylim=c(0.3, 0.8)) 
-    
-    fileName = sprintf('new_figures/waitProb%s%s.pdf', condName, ranking)
-    ggsave(file = fileName, width = 10, height = 6)
-  }
-}
+######### plot aucCompare and wtwCompare #######
+
+plotData = rbind(as.data.frame(colpHPData[c(1,5,6,7)]),
+                 as.data.frame(colpLPData[c(1,5,6,7)]))
+plotData$condition = rep(c('HP', 'LP'), each = length(colpHPData$totalEarnings))
+
+plotData = plotData %>% arrange(totalEarnings) %>%group_by(condition) %>%
+  mutate(earningRank = rank(totalEarnings, ties.method = "first"))
+
+ggplot(plotData, aes(condition, AUC)) + geom_jitter(aes(color =  earningRank ), size = 4) +
+  scale_color_gradient(low="red", high="yellow", name = 'Earning ranking') +
+  geom_segment(aes(x= 0.7, xend = 1.3, y=optimWaitTimes$HP,yend=optimWaitTimes$HP), size = 2) +
+  geom_segment(aes(x= 1.7, xend = 2.3, y=optimWaitTimes$LP,yend=optimWaitTimes$LP), size = 2) + saveTheme
+ggsave("QStar_figures/acuCompare.pdf", width = 12, height = 8)
+
+#### wtw
+
+ggplot(plotData, aes(condition, wtw)) + geom_jitter(aes(color =  earningRank ), size = 4) +
+  scale_color_gradient(low="red", high="yellow", name = 'Earning ranking') +
+  geom_segment(aes(x= 0.7, xend = 1.3, y=optimWaitTimes$HP,yend=optimWaitTimes$HP), size = 2) +
+  geom_segment(aes(x= 1.7, xend = 2.3, y=optimWaitTimes$LP,yend=optimWaitTimes$LP), size = 2) + saveTheme
+ggsave("QStar_figures/wtwCompare.pdf", width = 12, height = 8)
 
 
-####### survival 
-perc = 0.1
-nUse= floor(nComb* perc);
-rankings = c('Top', 'Bottom')
-for(c in 1 : 2){
-  cond = conditions[c]
-  condName = conditionNames[c]
-  if(cond == 'unif16'){
-    inputData = HPData
-    hdrData = hdrHPData
-  }else{
-    inputData = LPData
-    hdrData = hdrLPData
-  }
-  
-  for(r in 1:2){
-    ranking = rankings[r]
-    tempt = order(inputData$earnigs, decreasing = (ranking == 'Top'))
-    vas= inputData$survivalProbs[,tempt[1:nUse]]
-    
-    # plot
-    meanValues = apply(vas, FUN = mean, MARGIN = 1)
-    stdValues = apply(vas, FUN = sd, MARGIN = 1)
-    maxValues = meanValues + stdValues
-    minValues = meanValues - stdValues
-    plotData = data.frame(meanValues, stdValues, maxValues, minValues, 
-                          timeSteps = seq(1,hdrData$nTimeStep), actions  )
-    graphics.off()
-    titleText = sprintf("%s, %s%s total earnings",condName, ranking, percent(perc))
-    ggplot(plotData, aes(timeSteps, meanValues))+
-      geom_ribbon(aes(ymin=minValues, ymax=maxValues),linetype=0, alpha = 0.1, color = "#bababa") +
-      geom_line(color = conditionColors[c], size = 1) +  coord_cartesian(ylim=c(0,1)) +
-      xlab('Time step') + ylab('Surivival Prob') + ggtitle(titleText)+ myTheme 
-    
-    fileName = sprintf('new_figures/survialProb%s%s.pdf', condName, ranking)
-    ggsave(file = fileName, width = 10, height = 6)
-  }
-}
+### timeWaited
+
+ggplot(plotData, aes(condition, timeWaited)) + geom_jitter(aes(color =  earningRank ), size = 4) +
+  scale_color_gradient(low="red", high="yellow", name = 'Earning ranking') +
+  geom_segment(aes(x= 0.7, xend = 1.3, y=optimWaitTimes$HP,yend=optimWaitTimes$HP), size = 2) +
+  geom_segment(aes(x= 1.7, xend = 2.3, y=optimWaitTimes$LP,yend=optimWaitTimes$LP), size = 2) + displayTheme
+ggsave("QStar_figures/timeWaitedCompare.pdf", width = 12, height = 8)
+
+#### check immediete quit
+# HP 
+a = (rawHPData$timeWaited == 0) & (rawHPData$rewardDelays != 0)
+sum(a[!is.na(a)]) / 5 / 243
+endTicks = apply(rawHPData$rewardDelays, MARGIN = c(1,2),
+                 FUN = function(x) match(0, x) - 1)
+sum(a[!is.na(a)]) / 5 / 243 / mean(endTicks)
 
 
-### look at trial earnings 
+# LP
+a = (rawLPData$timeWaited == 0) & (rawLPData$rewardDelays != 0)
+sum(a[!is.na(a)]) / 5 / 243
+endTicks = apply(rawLPData$rewardDelays, MARGIN = c(1,2),
+                 FUN = function(x) match(0, x) - 1)
+sum(a[!is.na(a)]) / 5 / 243 / mean(endTicks)
+
+#### check wtw change
+# HP
+meanValues = c(apply(rawWTW$HP, MARGIN = 3, FUN = mean), 
+               apply(rawWTW$LP, MARGIN = 3, FUN = mean))
+stdValues = c(apply(rawWTW$HP, MARGIN = 3, FUN = sd), 
+               apply(rawWTW$LP, MARGIN = 3, FUN = sd))
+plotData = data.frame(meanValues, stdValues,
+                      time = rep(tGrid, time = 2),
+                      condition = rep(c('HP', 'LP'), each = length(tGrid)),
+                      minValues = meanValues - stdValues / sqrt(dim(rawWTW$HP)[1]),
+                      maxValues = meanValues + stdValues / sqrt(dim(rawWTW$HP)[1]))
+
+ggplot(plotData, aes(time, meanValues, color = condition)) + 
+  geom_ribbon(data = plotData[plotData$condition == 'HP',], aes(ymin=minValues, ymax=maxValues),linetype=0, alpha = 0.1, color = "#bababa") +
+  geom_ribbon(data = plotData[plotData$condition == 'LP',], aes(ymin=minValues, ymax=maxValues),linetype=0, alpha = 0.1, color = "#bababa") + 
+  geom_line(size = 1) + xlab('Time in block / s') + ylab('WTW / s') + saveTheme 
+ggsave("QStar_figures/wtwStimeseries.pdf", width = 12, height = 8)
+
+
+
