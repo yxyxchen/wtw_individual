@@ -1,7 +1,9 @@
 
+# getOtherPara organize steoDurations together with timing-variables in wtwSetting
 getOtherPara = function(cond, stepDuration, holdOnsteps = 5){
+  source('wtwSettings.R')
   # time steps
-  tMax = ifelse(cond == 'unif16', 16, 32)
+  tMax = ifelse(cond == conditions[1], tMaxs[1], tMaxs[2])
   
   # check validity of step duration
   if(1 %% stepDuration != 0){
@@ -23,10 +25,9 @@ getOtherPara = function(cond, stepDuration, holdOnsteps = 5){
   return(otherPara)
 }
 
-getMSPara = function(cond, stepDuration, nMS){
+getMSPara = function(cond, stepDuration, nMS, traceDecay, sigma){
   tMax = ifelse(cond == 'unif16', 16, 32)
   nTimeStep = tMax / (stepDuration); 
-  traceDecay = 0.985 
   traceValues = traceDecay ^ ((1 : nTimeStep) - 1)
   
   # mu for MS
@@ -38,9 +39,6 @@ getMSPara = function(cond, stepDuration, nMS){
     MSTimeSteps[i] = order(abs(traceValues - junk[i]))[1]
     MSMus[i] = traceValues[MSTimeSteps[i] ]
   }
-  
-  # temporal basis function
-  sigma = 0.2; # sd for basis function
   
   # pass to MSPara
   MSPara = list()
