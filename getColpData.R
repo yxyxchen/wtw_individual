@@ -6,9 +6,9 @@ source('plotTheme.R')
 source('wtwSettings.R')
 source('helperFxs.R')
 ############# load raw data
-load('QStarData/rawHPData.RData')
-load('QStarData/rawLPData.RData')
-load('QstarData/hdrData.RData')
+load('QStarData_wIniAll/rawHPData.RData')
+load('QStarData_wIniAll/rawLPData.RData')
+load('QstarData_wIniAll/hdrData.RData')
 
 ############ calculate colpData
 # colpTrialEarnings 
@@ -114,8 +114,8 @@ colpLPData = list(totalEarnings = colpTotalEarnings$LP,
                   wtw = apply(rawWTW$LP, MARGIN = 1, mean)
 )
 
-save('colpLPData', 'colpHPData', file = "QStarData/colpData.RData")
-
+save('colpLPData', 'colpHPData', file = "QStarData_wIniAll/colpData.RData")
+save('rawWTW', file = "QStarData_wIniAll/rawWTW.RData")
 ##### plot aucHP vs aucLP
 plotData = data.frame(aucHP = colpAUC$HP, aucLP = colpAUC$LP)
 ggplot(plotData, aes(aucHP, aucLP)) + geom_point(shape = "x", size = 6) + 

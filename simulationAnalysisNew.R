@@ -1,5 +1,7 @@
 # this script is for 
 
+# outFile
+outFile = 'QStar_figures'
 # library
 library("ggplot2")
 library("dplyr")
@@ -22,10 +24,10 @@ initialSpace[,5] = rep(rep(seq(2, 8, 3), each = nValue^4), nValue^(nPara - 5))
 
 #### 
 load('QStarData/colpData.RData')
+load('QStarData/rawWTW.RData')
 load('QStarData/hdrData.RData')
-load('QStarData/rawHPData.RData')
-load('QStarData/rawLPData.RData')
 ####
+
 ####### plot distribution of totalEarnings
 plotData = data.frame(totalEarnings = c(colpHPData$totalEarnings, colpLPData$totalEarnings),
                       condition = rep(c("HP", "LP"), each = nComb), phi = initialSpace[,1],
@@ -35,8 +37,8 @@ plotData = data.frame(totalEarnings = c(colpHPData$totalEarnings, colpLPData$tot
 
 ggplot(plotData, aes(totalEarnings)) + geom_histogram(bins = 15) +
   facet_wrap(~condition, nrow = 1) + xlab('Total earnings') + ylab("Num of simulations") + saveTheme + xlim(c(0, 600))
-dir.create("QStar_figures")
-ggsave("QStar_figures/earningSml.pdf", width = 16, height = 8)
+fileName = file.path(outFile, 'earningSml.pdf')
+ggsave(fileName, width = 16, height = 8)
 
 # calculate range
 summarise(group_by(plotData, condition),
@@ -77,11 +79,11 @@ for(c in 1:2){
     geom_bar(stat = "identity", width=0.5, fill = conditionColors[c]) + geom_errorbar(aes(ymin = ymin, ymax = ymax), width=.2)+
     facet_wrap(~paraNames, nrow = 1)+ saveTheme +
     xlab("Parameter value") + ylab("Total Earnings") + ggtitle(cond) 
-  fileName = sprintf("QStar_figures/paraEffect%s.pdf", cond)
+  fileName = file.path(outFile, sprintf("paraEffect%s.pdf", cond))
   ggsave(fileName, width = 16, height = 8) 
 }
 
-############ look at ws group by totalEanrings #########
+############ look at actionValues group by totalEanrings #########
 perc = 0.1
 nUse= floor(nComb* perc);
 rankings = c('Top', 'Bottom')
@@ -123,7 +125,7 @@ for(c in 1 : 2){
       geom_line(color = conditionColors[c], size = 1) + xlab('Time step') + ylab('Action value') + ggtitle(titleText)+ saveTheme +
       scale_linetype_discrete(name = "Action") 
     #coord_cartesian(ylim=c(-2,5)) 
-    fileName = sprintf('QStar_figures/actionValue%s%s.pdf', condName, ranking)
+    fileName = sprintf('QStarWiniAll_figures/actionValue%s%s.pdf', condName, ranking)
     ggsave(file = fileName, width = 10, height = 6)
   }
 }
@@ -141,7 +143,8 @@ ggplot(plotData, aes(condition, AUC)) + geom_jitter(aes(color =  earningRank ), 
   scale_color_gradient(low="red", high="yellow", name = 'Earning ranking') +
   geom_segment(aes(x= 0.7, xend = 1.3, y=optimWaitTimes$HP,yend=optimWaitTimes$HP), size = 2) +
   geom_segment(aes(x= 1.7, xend = 2.3, y=optimWaitTimes$LP,yend=optimWaitTimes$LP), size = 2) + saveTheme
-ggsave("QStar_figures/acuCompare.pdf", width = 12, height = 8)
+fileName = file.path(outFile, "acuCompare.pdf")
+ggsave(fileName, width = 12, height = 8)
 
 #### wtw
 
@@ -149,7 +152,8 @@ ggplot(plotData, aes(condition, wtw)) + geom_jitter(aes(color =  earningRank ), 
   scale_color_gradient(low="red", high="yellow", name = 'Earning ranking') +
   geom_segment(aes(x= 0.7, xend = 1.3, y=optimWaitTimes$HP,yend=optimWaitTimes$HP), size = 2) +
   geom_segment(aes(x= 1.7, xend = 2.3, y=optimWaitTimes$LP,yend=optimWaitTimes$LP), size = 2) + saveTheme
-ggsave("QStar_figures/wtwCompare.pdf", width = 12, height = 8)
+fileName = file.path(outFile, "wtwCompare.pdf")
+ggsave(fileName, width = 12, height = 8)
 
 
 ### timeWaited
@@ -158,7 +162,8 @@ ggplot(plotData, aes(condition, timeWaited)) + geom_jitter(aes(color =  earningR
   scale_color_gradient(low="red", high="yellow", name = 'Earning ranking') +
   geom_segment(aes(x= 0.7, xend = 1.3, y=optimWaitTimes$HP,yend=optimWaitTimes$HP), size = 2) +
   geom_segment(aes(x= 1.7, xend = 2.3, y=optimWaitTimes$LP,yend=optimWaitTimes$LP), size = 2) + displayTheme
-ggsave("QStar_figures/timeWaitedCompare.pdf", width = 12, height = 8)
+fileName = file.path(outFile, "timeWaited.pdf")
+ggsave(fileName, width = 12, height = 8)
 
 #### check immediete quit
 # HP 
@@ -166,7 +171,7 @@ a = (rawHPData$timeWaited == 0) & (rawHPData$rewardDelays != 0)
 sum(a[!is.na(a)]) / 5 / 243
 endTicks = apply(rawHPData$rewardDelays, MARGIN = c(1,2),
                  FUN = function(x) match(0, x) - 1)
-sum(a[!is.na(a)]) / 5 / 243 / mean(endTicks)
+sum(a[!is.na(a)]) / (5 * 243 * mean(endTicks))
 
 
 # LP
@@ -192,7 +197,8 @@ ggplot(plotData, aes(time, meanValues, color = condition)) +
   geom_ribbon(data = plotData[plotData$condition == 'HP',], aes(ymin=minValues, ymax=maxValues),linetype=0, alpha = 0.1, color = "#bababa") +
   geom_ribbon(data = plotData[plotData$condition == 'LP',], aes(ymin=minValues, ymax=maxValues),linetype=0, alpha = 0.1, color = "#bababa") + 
   geom_line(size = 1) + xlab('Time in block / s') + ylab('WTW / s') + saveTheme 
-ggsave("QStar_figures/wtwStimeseries.pdf", width = 12, height = 8)
+fileName = file.path(outFile, "wtwTimeSeries.pdf")
+ggsave(fileName, width = 12, height = 8)
 
 
 

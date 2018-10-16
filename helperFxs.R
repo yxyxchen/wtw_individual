@@ -6,8 +6,6 @@ library("ggplot2")
 source("plotTheme.R")
 source("wtwSettings.R")
 
-("plotTheme.R")
-
 # check the distribution of scheduled delays
 # ...as measured in number of key presses (for the instrumental version of the task)
 scheduledDelays <- function(blockData,blockLabel) {
@@ -37,11 +35,20 @@ trialPlots <- function(blockData,blockLabel) {
   # other parameters
   nTrials = nrow(blockData)
   # make the plot and add series
-  plot(1, type='n', xlim=c(1,nTrials), ylim=c(0,30), bty='n',
-       xlab='Trial', ylab='Trial duration (s)', main=sprintf('Trial data: %s',blockLabel))
-  lines(rwdTrialNo, rwdSchedDelay, col='blue', type='o', lwd=2, pch=16)
-  lines(quitTrialNo, quitTime, col='red', type='o', lwd=2, pch=16)
-  lines(quitTrialNo, quitSchedDelay, col='black', type='o', lwd=2, lty=0, pch=16)
+  rewardData = data.frame(rwdTrialNo, rwdSchedDelay)
+  quitData = data.frame(quitTrialNo, quitTime, quitSchedDelay)
+  
+  ggplot(rewardData, aes(rwdTrialNo, rwdSchedDelay)) +
+    geom_point(color = 'blue', size = 2) + 
+    geom_point(quitData, aes(quitTrialNo, quitTime), color = 'red', size = 2) + 
+    geom_point(quitData, aes(quitTrialNo, quitSchedDelay), color = 'black', size = 2)
+
+  #   plot(1, type='n', xlim=c(1,nTrials), ylim=c(0,32), bty='n',
+  #      xlab='Trial', ylab='Trial duration (s)', main=sprintf('Trial data: %s',blockLabel))
+  # lines(rwdTrialNo, rwdSchedDelay, col='blue', type='o', lwd=2, pch=16)
+  # lines(quitTrialNo, quitTime, col='red', type='o', lwd=2, pch=16)
+  # lines(quitTrialNo, quitSchedDelay, col='black', type='o', lwd=2, lty=0, pch=16)
+  
 }
 
 

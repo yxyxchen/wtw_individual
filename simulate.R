@@ -31,8 +31,9 @@ QStarModel = function(para, MSPara, otherPara, cond){
   
   ########### simulation repeatedly ############
   # initialize action value, eligibility trace and stat
-  ws = rep(0, nMS) # weight vector for "wait"
-  ws[1] = wIni # encourage explore at first
+  ws = rep(wIni, nMS) # weight vector for "wait"
+  #ws = rep(0, nMS) # weight vector for "wait"
+  #ws[1] = wIni # encourage explore at first
   es = rep(0, nMS); # es vector for "wait"
   onsetXs = dnorm(traceValues[1], MSMus, sigma) * sigma * traceValues[1]
   xs = onsetXs
@@ -87,7 +88,8 @@ QStarModel = function(para, MSPara, otherPara, cond){
           rewardOccur = rewardDelay <= timeTicks[t + 1] && rewardDelay > timeTicks[t] 
           
           # if rewarded and wait, 5; otherwise, 0
-          nextReward = ifelse(action == 'wait' && rewardOccur, 5, 0) 
+          getReward = (action == 'wait' && rewardOccur);
+          nextReward = ifelse(getReward, 5, 0) 
           
           # dertime next state
           # go to the terminate state if at the final step or quit or reward arrives
@@ -119,12 +121,12 @@ QStarModel = function(para, MSPara, otherPara, cond){
           if(!trialGoOn){
             trialEarnings[tIdx] = ifelse(nextReward == 5, 5, 0);
             # if quit, quit at t, if wait, wait until t+1
-            timeWaited[tIdx] = ifelse(rewardOccur,  NA, ifelse(action == "quit", timeTicks[t], timeTicks[t+1]))
+            timeWaited[tIdx] = ifelse(getReward,NA, ifelse(action == "quit", timeTicks[t], timeTicks[t+1]))
             rewardDelays[tIdx] = rewardDelay
             break
           }
         }  # one trial end
-        totalSecs = totalSecs + iti+ ifelse(rewardOccur, rewardDelay, timeWaited[tIdx])
+        totalSecs = totalSecs + iti+ ifelse(getReward, rewardDelay, timeWaited[tIdx])
         endTimes[tIdx] = totalSecs
       } # simulation end
       outputs = list("ws" = ws,

@@ -1,5 +1,8 @@
 # this simulation using average payoff
 
+### output file ####
+outFile = 'QStarData'
+#outFile = 'QStarData_wIniAll'
 ################## read data #################
 # library 
 library('ggplot2')
@@ -13,7 +16,7 @@ source('getPara.R') # functions to get MSPara and otherPara from inputs and wtwS
 
 ################ input ################
 # cond input
-condIdx = 1
+condIdx = 2
 cond = conditions[condIdx];
 condName = conditionNames[condIdx]
 condColor = conditionColors[condIdx]
@@ -41,6 +44,7 @@ initialSpace[,5] = rep(rep(seq(2, 8, 3), each = nValue^4), nValue^(nPara - 5))
 
 # set seed
 set.seed(123)
+
 # simualte 
 nRep = 5
 TrialEarnings = array(dim = c(nValue^nPara, nRep, blockSecs / iti + 1))
@@ -69,8 +73,8 @@ outputData = list("ws" = Ws, "timeWaited" = TimeWaited,
                  )
 
 if(cond == "unif16") rawHPData = outputData else rawLPData = outputData   
-
-fileName = sprintf('QStarData/raw%sData.RData', condName)
+dir.create('QStarData_wIniAll')
+fileName = sprintf('%s/raw%sData.RData', outFile, condName)
 if(cond == "unif16") save(rawHPData,file = fileName) else save(rawLPData,file = fileName) 
 
 
@@ -89,6 +93,7 @@ for(c in 1: 2){
   hdrData$traceValues = hdrData$traceDecay ^ ( 1 :   hdrData$nTimeStep - 1)
   if(cond == 'unif16') hdrHPData= hdrData else  hdrLPData= hdrData
 }
-save(hdrHPData, hdrLPData, file = 'QStarData/hdrData.RData')
+fileName = sprintf('%s/hdrData.RData', outFile)
+save(hdrHPData, hdrLPData, file = fileName)
 
 
