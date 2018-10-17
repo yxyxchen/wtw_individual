@@ -5,10 +5,11 @@ library('scales')
 source('plotTheme.R')
 source('wtwSettings.R')
 source('helperFxs.R')
+## outFile
+outFile = 'QStarData'
 ############# load raw data
-load('QStarData_wIniAll/rawHPData.RData')
-load('QStarData_wIniAll/rawLPData.RData')
-load('QstarData_wIniAll/hdrData.RData')
+load('QStarData/rawData.RData')
+load('QstarData/hdrData.RData')
 
 ############ calculate colpData
 # colpTrialEarnings 
@@ -114,61 +115,7 @@ colpLPData = list(totalEarnings = colpTotalEarnings$LP,
                   wtw = apply(rawWTW$LP, MARGIN = 1, mean)
 )
 
-save('colpLPData', 'colpHPData', file = "QStarData_wIniAll/colpData.RData")
-save('rawWTW', file = "QStarData_wIniAll/rawWTW.RData")
-##### plot aucHP vs aucLP
-plotData = data.frame(aucHP = colpAUC$HP, aucLP = colpAUC$LP)
-ggplot(plotData, aes(aucHP, aucLP)) + geom_point(shape = "x", size = 6) + 
-  geom_point(data = data.frame(optimWaitTimes$HP, optimWaitTimes$LP),
-             aes(optimWaitTimes$HP, optimWaitTimes$LP), color = 'red', size = 3) +
-  xlab('HP AUC / s') + ylab('LP AUC / s') + coord_equal(ratio=1) + saveTheme + xlim(c(0, 32))
-ggsave("QStar_figures/acuHPvsLP.pdf", width = 8, height = 8)
-
-
-### plot acuLP vs total Earnings
-plotData = data.frame(aucLP = colpAUC$LP, totalEarnings = colpTotalEarnings$LP)
-ggplot(plotData, aes(aucLP, totalEarnings)) + geom_point()
-
-
-##
-thisTimeWTW = apply(rawWTW$HP[22, , ], MARGIN = 2, FUN = mean)
-ggplot(data.frame(tGrid, timeWTW = thisTimeWTW ), aes(tGrid, timeWTW)) + geom_line() +
-  xlab("Time in block (s)") + ylab("WTW (s)") + displayTheme
-
-ggplot(data.frame(tGrid, timeWTW = rawWTW$LP[22, 2, ]), aes(tGrid, timeWTW)) + geom_line() +
-  xlab("Time in block (s)") + ylab("WTW (s)") 
-
-
-####
-hist(colpLPData$AUC)
-hist(colpHPData$AUC)
-
-hist(colpLPData$AUC[order(colpLPData$totalEarnings)[1:10]])
-hist(colpLPData$totalEarnings[order(colpLPData$totalEarnings)[1:10]])
-
-hist(colpLPData$AUC[order(colpLPData$totalEarnings, decreasing = T)[1:10]])
-hist(colpLPData$totalEarnings[order(colpLPData$totalEarnings, decreasing = T)[1:10]])
-
-
-
-hist(colpHPData$AUC[order(colpHPData$totalEarnings)[1:10]])
-hist(colpHPData$totalEarnings[order(colpHPData$totalEarnings)[1:10]])
-
-hist(colpHPData$AUC[order(colpHPData$totalEarnings, decreasing = T)[1:10]])
-hist(colpHPData$totalEarnings[order(colpHPData$totalEarnings, decreasing = T)[1:10]])
-
-
-
-### explore earning var
-inputData = rawHPData
-totalEarnings = apply(inputData$trialEarnings, MARGIN = c(1, 2), FUN = sum)
-earnVar = apply(totalEarnings, MARGIN = 1, FUN =sd)
-hist(earnVar)
-mean(earnVar)
-
-
-
-
-hist(colpLPData$timeWaited[order(colpLPData$totalEarnings)[1:10]]) # worst
-hist(colpLPData$timeWaited[order(colpLPData$totalEarnings, decreasing = T)[1:10]]) # best
-
+fileName = sprintf("%s/colpData.RData", outFile)
+save('colpLPData', 'colpHPData', file = fileName )
+fileName = sprintf("%s/rawWTW.RData", outFile)
+save('rawWTW', file = fileName)

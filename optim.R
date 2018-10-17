@@ -53,9 +53,10 @@ Ws = array(dim = c(nValue^nPara, nRep, nMS))
 TimeWaited = array(dim = c(nValue^nPara, nRep, blockSecs / iti + 1))
 vaQuits = array(dim = c(nValue^nPara, nRep, tMax / stepDuration, blockSecs / iti + 1))
 vaWaits = array(dim = c(nValue^nPara, nRep, tMax / stepDuration, blockSecs / iti + 1))
-for(j in 1 : nRep){
-  for(i in 1:nrow(initialSpace)){
-    para = initialSpace[i,]
+
+for(i in 1 : 1:nrow(initialSpace)){
+  para = initialSpace[i,]
+  for(j in 1 : nRep ){
     tempt=  QStarModel(para,MSPara, otherPara, cond)
     TrialEarnings[i, j,] = tempt[['trialEarnings']]
     Ws[i, j,] = tempt[['ws']]
@@ -73,9 +74,8 @@ outputData = list("ws" = Ws, "timeWaited" = TimeWaited,
                  )
 
 if(cond == "unif16") rawHPData = outputData else rawLPData = outputData   
-dir.create('QStarData_wIniAll')
-fileName = sprintf('%s/raw%sData.RData', outFile, condName)
-if(cond == "unif16") save(rawHPData,file = fileName) else save(rawLPData,file = fileName) 
+fileName = sprintf('%s/rawData.RData', outFile)
+save(rawHPData,rawLPData, file = fileName) 
 
 
 ######## generate hdrData ######
