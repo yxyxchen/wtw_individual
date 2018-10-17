@@ -124,8 +124,8 @@ for(c in 1 : 2){
       geom_ribbon(data = plotData[plotData$actions == 'quit',], aes(ymin=minValues, ymax=maxValues),linetype=0, alpha = 0.1, color = "#bababa") + 
       geom_line(color = conditionColors[c], size = 1) + xlab('Time step') + ylab('Action value') + ggtitle(titleText)+ saveTheme +
       scale_linetype_discrete(name = "Action") 
-    #coord_cartesian(ylim=c(-2,5)) 
-    fileName = sprintf('QStarWiniAll_figures/actionValue%s%s.pdf', condName, ranking)
+    #coord_cartesian(ylim=c(-2,5))
+    fileName = sprintf('%s/actionValue%s%s.pdf', outFile, condName, ranking)
     ggsave(file = fileName, width = 10, height = 6)
   }
 }
@@ -146,8 +146,26 @@ ggplot(plotData, aes(condition, AUC)) + geom_jitter(aes(color =  earningRank ), 
 fileName = file.path(outFile, "acuCompare.pdf")
 ggsave(fileName, width = 12, height = 8)
 
-#### wtw
+#### plot AUCLP and earningsLP
+plotData = rbind(as.data.frame(colpHPData[c(1,5,6,7)]),
+                 as.data.frame(colpLPData[c(1,5,6,7)]))
+plotData$condition = rep(c('HP', 'LP'), each = length(colpHPData$totalEarnings))
 
+plotData = plotData %>% arrange(totalEarnings) %>%group_by(condition) %>%
+  mutate(earningRank = rank(totalEarnings, ties.method = "first"))
+
+ggplot(plotData, aes(condition, AUC)) + geom_jitter(aes(color =  earningRank ), size = 4) +
+  scale_color_gradient(low="red", high="yellow", name = 'Earning ranking') +
+  geom_segment(aes(x= 0.7, xend = 1.3, y=optimWaitTimes$HP,yend=optimWaitTimes$HP), size = 2) +
+  geom_segment(aes(x= 1.7, xend = 2.3, y=optimWaitTimes$LP,yend=optimWaitTimes$LP), size = 2) + saveTheme
+fileName = file.path(outFile, "acuCompare.pdf")
+ggsave(fileName, width = 12, height = 8)
+
+ggplot(plotData[plotData$condition == 'LP',], aes(AUC, totalEarnings)) + geom_point() +
+  saveTheme + ylab('Total earnings')
+fileName = file.path(outFile, "AUCLP_earningsLP.pdf") 
+ggsave(fileName, width = 6, height = 4)
+#### wtw
 ggplot(plotData, aes(condition, wtw)) + geom_jitter(aes(color =  earningRank ), size = 4) +
   scale_color_gradient(low="red", high="yellow", name = 'Earning ranking') +
   geom_segment(aes(x= 0.7, xend = 1.3, y=optimWaitTimes$HP,yend=optimWaitTimes$HP), size = 2) +
@@ -199,6 +217,7 @@ ggplot(plotData, aes(time, meanValues, color = condition)) +
   geom_line(size = 1) + xlab('Time in block / s') + ylab('WTW / s') + saveTheme 
 fileName = file.path(outFile, "wtwTimeSeries.pdf")
 ggsave(fileName, width = 12, height = 8)
+
 
 
 

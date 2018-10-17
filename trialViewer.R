@@ -3,45 +3,15 @@ source('helperFxs.R')
 
 #####
 
-# plot trialwise responses in detail
-trialPlots <- function(blockData,blockLabel) {
-  # vectors to be plotted
-  rwdIdx = blockData$trialEarnings != 0
-  quitIdx = blockData$trialEarnings == 0
-  rwdTrialNo = blockData$trialNum[rwdIdx]
-  quitTrialNo = blockData$trialNum[quitIdx]
-  rwdSchedDelay = blockData$scheduledWait[rwdIdx]
-  quitSchedDelay = blockData$scheduledWait[quitIdx]
-  waitDuration = blockData$timeWaited
-  quitTime = waitDuration[quitIdx]
-  # other parameters
-  nTrials = nrow(blockData)
-  # make the plot and add series
-  rewardData = data.frame(rwdTrialNo, rwdSchedDelay)
-  quitData = data.frame(quitTrialNo, quitTime, quitSchedDelay)
-  
-  ggplot(rewardData, aes(rwdTrialNo, rwdSchedDelay)) +
-    geom_point(color = 'blue', size = 1) + geom_line(color = 'blue')
-    geom_point(quitData, aes(quitTrialNo, quitTime), color = 'red', size = 1) +
-      geom_line(color = 'red')
-      
-    geom_point(quitData, aes(quitTrialNo, quitSchedDelay), color = 'black', size = 1)
-  
-  #   plot(1, type='n', xlim=c(1,nTrials), ylim=c(0,32), bty='n',
-  #      xlab='Trial', ylab='Trial duration (s)', main=sprintf('Trial data: %s',blockLabel))
-  # lines(rwdTrialNo, rwdSchedDelay, col='blue', type='o', lwd=2, pch=16)
-  # lines(quitTrialNo, quitTime, col='red', type='o', lwd=2, pch=16)
-  # lines(quitTrialNo, quitSchedDelay, col='black', type='o', lwd=2, lty=0, pch=16)
-  
-}
-
 ####
-load('QStarData/rawLPdata.RData')
+load('QStarData/rawdata.RData')
 load('QStarData/colpData.RData')
 
 ####
-i = 60
-j = 2
+which(colpLPData$AUC <= 6 & colpLPData$AUC >= 2)
+#  19  21  46  47  48  74 100 202 229 230 231
+i = 19
+j = 3
 totalEarnings = sum(rawLPData$trialEarnings[i,j,])
 wtw = colpLPData$wtw[i]
 AUC = colpLPData$AUC[i]

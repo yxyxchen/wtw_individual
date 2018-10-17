@@ -1,6 +1,8 @@
 # individual difference analysis
 # Cyx
 
+# outFile 
+outFile = 'exp_figures'
 # analysis sub-functions
 source('load.R')
 source('helperFxs.R')
@@ -169,10 +171,6 @@ ggplot(plotData, aes(condition, wtw)) + geom_jitter(aes(color =  earningRank ), 
   geom_segment(aes(x= 1.7, xend = 2.3, y=optimWaitTimes$LP,yend=optimWaitTimes$LP), size = 2) + saveTheme
 ggsave("exp_figures/wtwCompare.pdf", width = 12, height = 8)
 
-# compare mean wtw
-
-
-
 ###### compare AUC for best earn and worst earn
 nUse = n * 0.1
 plotData1 = summarise(group_by(groupData, condition),
@@ -199,8 +197,44 @@ ggsave("exp_figures/acuEarn.pdf", width = 12, height = 8)
 
 
 ##### plot aucLP & totalEarnings
-ggplot(groupData[groupData$condition == 'LP',], aes(AUC, totalEarnings)) + geom_point()
+# prepare plotData
+earningsLP = groupData$totalEarnings[groupData$condition == 'LP']
+AUCLP = groupData$AUC[groupData$condition == 'LP']
+plotData = data.frame(totalEarnings = earningsLP, AUC = AUCLP)
+plotData$binary = cut(plotData$AUC, c(0, 15, 32))
+plotData$cate = cut(plotData$AUC, seq(0, 32, by = 2))
 
+# AUCLP_EarningsLP together
+ggplot(plotData, aes(AUC, totalEarnings)) + geom_point() + 
+  geom_smooth(method = lm, se = T) + facet_wrap(~binary) + saveTheme + ylab('Total earnings') + xlab("AUC")  
+fileName = file.path(outFile, "AUCLP_earningsLP.pdf") 
+ggsave(fileName, width = 6, height = 4)
+
+
+# AUCLP_EarningsLP histogram, 15 bins
+tempt = summarise(group_by(plotData, cate), meanValues = mean(totalEarnings),
+                     stdValues = sd(totalEarnings))
+
+tempt$cateMean = which( levels(tempt$cate) %in% tempt$cate) * 2 - 1
+leftCateMean = which( !levels(tempt$cate) %in% tempt$cate) * 2 - 1
+plotData2 = data.frame(meanValues = c(tempt$meanValues, rep(350, length(leftCateMean))),
+                       stdValues = c(tempt$stdValues, rep(NA, length(leftCateMean))),
+                       cateMean = c(tempt$cateMean,leftCateMean),
+                       condition = c(rep('data', length(tempt$cateMean)),
+                                    rep('missing', length(leftCateMean))))
+
+plotData2$minValues = plotData2$meanValues - plotData2$stdValues
+plotData2$maxValues = plotData2$meanValues + plotData2$stdValues
+
+
+ggplot(plotData2, aes(cateMean, meanValues, color = condition)) + geom_point() +
+  ylab('Total earnings') + xlab('AUC interval / s') + 
+  geom_errorbar(aes(ymax= maxValues, ymin = minValues)) + 
+  displayTheme + theme(axis.text.x = element_text(angle = 45)) + 
+  scale_color_manual(values = c('black', 'red')) +
+  geom_vline(xintercept = timings$LP, linetype = 2, color = "#404040")
+fileName = file.path(outFile, "AUCLP_earningsLP_bin.pdf") 
+ggsave(fileName, width = 6, height = 4)
 
 
 ##### plot total earnings
@@ -208,5 +242,8 @@ ggplot(groupData, aes(groupData$totalEarnings)) + geom_histogram(bins = 10) +
   facet_wrap(~condition, nrow = 1) + xlab('Total earnings') + ylab("Num of blocks") + myTheme + xlim(c(0, 600))
 dir.create('figures')
 ggsave("figures/earningExp.pdf", width = 8, height = 4)
+
+
+
 
 

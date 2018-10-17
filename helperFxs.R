@@ -23,6 +23,7 @@ scheduledDelays <- function(blockData,blockLabel) {
 
 # plot trialwise responses in detail
 trialPlots <- function(blockData,blockLabel) {
+  source('plotTheme.R')
   # vectors to be plotted
   rwdIdx = blockData$trialEarnings != 0
   quitIdx = blockData$trialEarnings == 0
@@ -35,20 +36,17 @@ trialPlots <- function(blockData,blockLabel) {
   # other parameters
   nTrials = nrow(blockData)
   # make the plot and add series
-  rewardData = data.frame(rwdTrialNo, rwdSchedDelay)
-  quitData = data.frame(quitTrialNo, quitTime, quitSchedDelay)
-  
-  ggplot(rewardData, aes(rwdTrialNo, rwdSchedDelay)) +
-    geom_point(color = 'blue', size = 2) + 
-    geom_point(quitData, aes(quitTrialNo, quitTime), color = 'red', size = 2) + 
-    geom_point(quitData, aes(quitTrialNo, quitSchedDelay), color = 'black', size = 2)
-
-  #   plot(1, type='n', xlim=c(1,nTrials), ylim=c(0,32), bty='n',
-  #      xlab='Trial', ylab='Trial duration (s)', main=sprintf('Trial data: %s',blockLabel))
-  # lines(rwdTrialNo, rwdSchedDelay, col='blue', type='o', lwd=2, pch=16)
-  # lines(quitTrialNo, quitTime, col='red', type='o', lwd=2, pch=16)
-  # lines(quitTrialNo, quitSchedDelay, col='black', type='o', lwd=2, lty=0, pch=16)
-  
+  plotData = data.frame(trialNum = c(rwdTrialNo, quitTrialNo, quitTrialNo),
+                        trialDuration = c(rwdSchedDelay, quitTime, quitSchedDelay),
+                        condition = rep(c('reward', 'quit', 'quitSchedule'), time = 
+                                        c(length(rwdTrialNo), length(quitTrialNo),
+                                          length(quitTrialNo))))
+  plotData$condition = factor( plotData$condition, levels = c('reward', 'quit', 'quitSchedule'))
+  ggplot(plotData, aes(trialNum, trialDuration, color = condition)) + geom_point() +
+  geom_line(data = plotData[plotData$condition != 'quitSchedule',],
+            aes(trialNum, trialDuration, color = condition)) +
+    scale_color_manual(values = c('blue', 'red', 'black')) + 
+    xlab('Trial num') + ylab('Trial duration / s') + ggtitle(label) + displayTheme
 }
 
 
