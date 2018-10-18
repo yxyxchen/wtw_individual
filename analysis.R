@@ -128,6 +128,8 @@ groupData = data.frame(id = rep(allIDs, each = 2), blockNum = rep(c(1,2), n),
                        cbal = rep(hdrData$Cbal, each = 2), condition = factor(condByBlock, levels = c('HP', 'LP')),
                        trialFun = FunctionByBlock, AUC = grpAUC,
                        totalEarnings = earningsByBlock)
+save(groupData, file = 'expData/groupData.RData')
+
 
 ### plot wtw
 meanValues = c(apply(wtw[,groupData$condition == 'HP'], MARGIN = 1, FUN = mean), 

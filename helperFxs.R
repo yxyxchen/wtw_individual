@@ -42,11 +42,12 @@ trialPlots <- function(blockData,blockLabel) {
                                         c(length(rwdTrialNo), length(quitTrialNo),
                                           length(quitTrialNo))))
   plotData$condition = factor( plotData$condition, levels = c('reward', 'quit', 'quitSchedule'))
-  ggplot(plotData, aes(trialNum, trialDuration, color = condition)) + geom_point() +
+  p = ggplot(plotData, aes(trialNum, trialDuration, color = condition)) + geom_point() +
   geom_line(data = plotData[plotData$condition != 'quitSchedule',],
             aes(trialNum, trialDuration, color = condition)) +
     scale_color_manual(values = c('blue', 'red', 'black')) + 
     xlab('Trial num') + ylab('Trial duration / s') + ggtitle(label) + displayTheme
+  print(p)
 }
 
 

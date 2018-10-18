@@ -71,11 +71,11 @@ for(c in 1 : 2){
       waitDuration = waitDuration[1 : (endTick - 1)]
       quitIdx = quitIdx[1 : (endTick - 1)]
       
-      #output[i, j] = kmscSimple(waitDuration, quitIdx, tMax, trialTick)$auc
+      output[i, j] = kmscSimple(waitDuration, quitIdx, tMax, trialTick)$auc
       wtwResult[i, j, ] = wtwTSSimple(waitDuration, quitIdx, tGrid, tMax)
     } # end of comb
   }# end of condition
-  #colpAUC[[condName]] = rowSums(output) / ncol(output)
+  colpAUC[[condName]] = rowSums(output) / ncol(output)
   rawWTW[[condName]] = wtwResult
 }
 
