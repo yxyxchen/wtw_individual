@@ -75,7 +75,8 @@ QStarModel = function(para, MSPara, otherPara, cond){
           vaWaits[t, tIdx] = vaWait;
           
           # determine action
-          waitRate = exp(vaWait * tau) / sum(exp(vaWait) * tau + exp(vaQuit) * tau)
+          waitRate = exp(vaWait * tau) / sum(exp(vaWait* tau)  + exp(vaQuit * tau) )
+          # used to be exp(vaWait) * tau
           # when gamma is large, sometimes vaWait will be very large, sothat waitRate is NA
           if(is.na(waitRate)){
             waitRate = 1

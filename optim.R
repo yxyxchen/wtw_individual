@@ -16,7 +16,7 @@ source('getPara.R') # functions to get MSPara and otherPara from inputs and wtwS
 
 ################ input ################
 # cond input
-condIdx = 2
+condIdx = 1
 cond = conditions[condIdx];
 condName = conditionNames[condIdx]
 condColor = conditionColors[condIdx]
