@@ -1,53 +1,68 @@
-# 
+# we should upload it
 source('helperFxs.R')
 library('ggplot2')
 source('plotTheme.R')
+source('wtwSettings.R')
 
-#####
-
+# load data 
 ####
 load('QStarData/rawdata.RData')
 load('QStarData/colpData.RData')
 
+# prepare
 ####
+condIdx = 2
+cond = conditions[condIdx]
+condName = conditionNames[condIdx]
 
+inputColp = if(condName == 'HP') inputColp = colpHPData else inputColp = colpLPData
+inputRaw = if(condName == 'HP') inputRaw = rawHPData else inputRaw = rawLPData
+
+tMax = tMaxs[condIdx]
+trialTick = trialTicks[[condIdx]] # so here if use [2] then get a list
 # choose combs you want to plot
-nCombList = which(colpLPData$AUC <= 6 & colpLPData$AUC >= 2) # combs supposed to earn most 
-#nCombList = which(colpLPData$totalEarnings > 410) # combs actually earn most
+nCombList = which(inputColp$AUC <= 6 & inputColp$AUC >= 2) # combs supposed to earn most 
+#nCombList = which(inputColp$totalEarnings > 410) # combs actually earn most
 plotTrialData = T
-plotKMSC= F
-drawTimeSample = F
+plotKMSC= T
+drawTimeSample = T
 
 for (nCb in 1 : length(nCombList)){
   i = nCombList[nCb]
   j = 1
   
   # prepare total earnings, wtw and AUC
-  totalEarnings = sum(rawLPData$trialEarnings[i,j,])
-  wtw = colpLPData$wtw[i]
-  AUC = colpLPData$AUC[i]
-  label = sprintf('earn: %d, wtw: %.2f, AUC: %.2f',
+  totalEarnings = inputColp$totalEarnings[i]
+  wtw = inputColp$wtw[i]
+  AUC = inputColp$AUC[i]
+  
+  quikQuit = 
+  label = sprintf('colp stat, earn: %d, wtw: %.2f, AUC: %.2f',
                   totalEarnings, wtw, AUC)
   
   if(plotTrialData){
     # prepare trialData
-    blockData = data.frame(trialEarnings = rawLPData$trialEarnings[i,j,],
-                           scheduledWait = rawLPData$rewardDelays[i,j,],
-                           timeWaited = rawLPData$timeWaited[i,j,],
-                           trialNum = 1 : length(rawLPData$timeWaited[i,j,])
+    blockData = data.frame(trialEarnings = inputRaw$trialEarnings[i,j,],
+                           scheduledWait = inputRaw$rewardDelays[i,j,],
+                           timeWaited = inputRaw$timeWaited[i,j,],
+                           trialNum = 1 : length(inputRaw$timeWaited[i,j,])
     )
-    endTick = match(0, rawLPData$rewardDelays[i,j,]) - 1
+    endTick = match(0, inputRaw$rewardDelays[i,j,]) - 1
     blockData = blockData[1:endTick, ]
     # plot
     trialPlots(blockData, label)
+  }
+  
+  if(any(plotTrialData)) {
+    readline(prompt = paste(nCb, '(hit ENTER to continue)'))
   }
 
   
   ## look at kmsc
   if(plotKMSC){
-    waitDuration = rawLPData$timeWaited[i, j, ]
-    rewardDelay = rawLPData$rewardDelays[i, j, ]
-    quitIdx = (rawLPData$trialEarnings[i, j, ] == 0)
+    waitDuration = inputRaw$timeWaited[i, j, ]
+    rewardDelay = inputRaw$rewardDelays[i, j, ]
+    quitIdx = (inputRaw$trialEarnings[i, j, ] == 0)
     waitDuration[is.na(waitDuration)] = rewardDelay[is.na(waitDuration)]
     endTick = match(0,rewardDelay)
     waitDuration = waitDuration[1 : (endTick - 1)]
@@ -58,6 +73,10 @@ for (nCb in 1 : length(nCombList)){
     p = ggplot(plotData, aes(time, pSurvival)) + geom_line() + ylim(c(0, 1)) + displayTheme +
       ggtitle(label)
     print(p)
+  }
+  
+  if(any(plotKMSC)) {
+    readline(prompt = paste(nCb, '(hit ENTER to continue)'))
   }
   
   ### draw wait duration distribution
@@ -74,11 +93,10 @@ for (nCb in 1 : length(nCombList)){
     print(p)
   }
     
-    
-  # # wait for input before continuing, if individual plots were requested
-  if(any(plotAUC, plotTrialData)) {
+  if(any(drawTimeSample)) {
     readline(prompt = paste(nCb, '(hit ENTER to continue)'))
   }
+  
 }
 
 
@@ -133,7 +151,11 @@ for(nCb in 1 : length(nCombList)){
 }
 
   
-  
+## look deep 
+check = rawLPData$vaWaits[4 , 1,  , ]
+record = data.frame( rawLPData$trialEarnings[4, 1,],
+                     rawLPData$timeWaited[4,1,])
+
   
   
   

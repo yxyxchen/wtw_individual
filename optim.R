@@ -2,7 +2,6 @@
 
 ### output file ####
 outFile = 'QStarData'
-#outFile = 'QStarData_wIniAll'
 ################## read data #################
 # library 
 library('ggplot2')
@@ -16,7 +15,7 @@ source('getPara.R') # functions to get MSPara and otherPara from inputs and wtwS
 
 ################ input ################
 # cond input
-condIdx = 2
+condIdx = 1
 cond = conditions[condIdx];
 condName = conditionNames[condIdx]
 condColor = conditionColors[condIdx]
@@ -24,13 +23,9 @@ sprintf('Condition : %s %s', cond, condName)
 
 # other input
 stepDuration = 0.5
-nMS = 10
-traceDecay = 0.985
-sigma = 0.2
 
 # genrate
 otherPara = getOtherPara(cond, stepDuration)
-MSPara = getMSPara(cond, stepDuration, nMS, traceDecay, sigma)
 ############# simulate for the distribution of toalEarnings ##########
 nPara = 5
 nValue = 3
@@ -49,7 +44,7 @@ set.seed(123)
 nRep = 5
 TrialEarnings = array(dim = c(nValue^nPara, nRep, blockSecs / iti + 1))
 RewardDelays = array(dim = c(nValue^nPara, nRep, blockSecs / iti + 1))
-Ws = array(dim = c(nValue^nPara, nRep, nMS))
+Ws = array(dim = c(nValue^nPara, nRep, tMax / stepDuration))
 TimeWaited = array(dim = c(nValue^nPara, nRep, blockSecs / iti + 1))
 vaQuits = array(dim = c(nValue^nPara, nRep, tMax / stepDuration, blockSecs / iti + 1))
 vaWaits = array(dim = c(nValue^nPara, nRep, tMax / stepDuration, blockSecs / iti + 1))
@@ -87,10 +82,8 @@ source("getPara.R")
 for(c in 1: 2){
   cond = conditions[c]
   otherPara = getOtherPara(cond, stepDuration)
-  MSPara = getMSPara(cond, stepDuration, nMS, traceDecay, sigma)  
-  hdrData = c(otherPara, MSPara)
+  hdrData = c(otherPara)
   hdrData$nTimeStep = hdrData$tMax / hdrData$stepDuration
-  hdrData$traceValues = hdrData$traceDecay ^ ( 1 :   hdrData$nTimeStep - 1)
   if(cond == 'unif16') hdrHPData= hdrData else  hdrLPData= hdrData
 }
 fileName = sprintf('%s/hdrData.RData', outFile)

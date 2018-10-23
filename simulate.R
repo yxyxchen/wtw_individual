@@ -17,26 +17,15 @@ QStarModel = function(para, MSPara, otherPara, cond){
   timeTicks = otherPara[['timeTicks']] # begin timepoint of states
   nTimeStep = tMax / stepDuration
   
-  # read MSPara
-  nMS = MSPara$nMS
-  sigma = MSPara[['sigma']]
-  MSMus = MSPara[['MSMus']]
-  traceDecay = MSPara[['traceDecay']]
-  # define trace values of step t as 0.95^(t - 1)
-  # we can also define it as 0.95^t, it is abitrary
-  traceValues = traceDecay ^ ((1 : nTimeStep) - 1)
-  
   # actionList
   actionList = c('wait', 'quit') # wait means wait until t+1, quit means quit at t
   
   ########### simulation repeatedly ############
   # initialize action value, eligibility trace and stat
-  ws = rep(wIni, nMS) # weight vector for "wait"
-  #ws = rep(0, nMS) # weight vector for "wait"
-  #ws[1] = wIni # encourage explore at first
-  es = rep(0, nMS); # es vector for "wait"
-  onsetXs = dnorm(traceValues[1], MSMus, sigma) * sigma * traceValues[1]
-  xs = onsetXs
+  ws = rep(wIni, nTimeStep) # weight vector for "wait", each element for each timeStep
+  es = rep(0, nTimeStep); # es vector for "wait"
+  onsetXs = 1 # onset state is 1
+  xs = onsetXs # every trial starts from the onset state
   
   # additionally initialize vaWaits and vaQuits
   vaWaits = matrix(NA, tMax / stepDuration, blockSecs / iti + 1);
@@ -69,13 +58,13 @@ QStarModel = function(para, MSPara, otherPara, cond){
         # if near the block end, the check total Secs everytime
         for(t in 1 : nAvaStep){
           # calculte action value 
-          vaQuit = onsetXs %*% ws * gamma^(iti / stepDuration) # didn't consider iTi, to stop getting things to complex
-          vaWait = xs %*% ws;
+          vaQuit = ws[onsetXs] * gamma^(iti / stepDuration) # didn't consider iTi, to stop getting things to complex
+          vaWait = ws[xs];
           vaQuits[t, tIdx] = vaQuit;
           vaWaits[t, tIdx] = vaWait;
           
           # determine action
-          waitRate = exp(vaWait * tau) / sum(exp(vaWait) * tau + exp(vaQuit) * tau)
+          waitRate = exp(vaWait * tau) / sum(exp(vaWait * tau)  + exp(vaQuit * tau) )
           # when gamma is large, sometimes vaWait will be very large, sothat waitRate is NA
           if(is.na(waitRate)){
             waitRate = 1
@@ -95,22 +84,24 @@ QStarModel = function(para, MSPara, otherPara, cond){
           # go to the terminate state if at the final step or quit or reward arrives
           trialGoOn= (action == 'wait' && !rewardOccur && t < nAvaStep)
           if(trialGoOn){
-            nextXs = dnorm(traceValues[t + 1], MSMus, sigma) * sigma * traceValues[t + 1]
+            nextXs = xs + 1
           }else{
             nextXs  = onsetXs
           }
           
           # update eligilibity trace
           # here stepGap meatured between At and At-1
-          es =  gamma^stepGap * lambda * es + xs * c(action == "wait")
+          junk = rep(0, nTimeStep)
+          junk[xs] = 1
+          es =  gamma^stepGap * lambda * es + junk * c(action == "wait")
           
           # update stepGap
           stepGap = ifelse(trialGoOn, 1, iti / stepDuration)
           
           # update action value of quit and wait
           # here stepGap meatured between At and At+1
-          delta = nextReward + c(gamma^(stepGap) * max(nextXs %*% ws, vaQuit) -
-                                           ifelse(action == 'wait', vaWait, vaQuit))
+          delta = nextReward + c(gamma^(stepGap) * max(ws[nextXs], vaQuit)) -
+                                           ifelse(action == 'wait', vaWait, vaQuit)
           ws = ws + phi * delta * es
           
           # update xs and stepGap

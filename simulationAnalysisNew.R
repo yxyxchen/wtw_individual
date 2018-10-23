@@ -186,7 +186,6 @@ ggsave(fileName, width = 12, height = 8)
 #### check immediete quit
 # HP 
 a = (rawHPData$timeWaited == 0) & (rawHPData$rewardDelays != 0)
-sum(a[!is.na(a)]) / 5 / 243
 endTicks = apply(rawHPData$rewardDelays, MARGIN = c(1,2),
                  FUN = function(x) match(0, x) - 1)
 sum(a[!is.na(a)]) / (5 * 243 * mean(endTicks))
@@ -194,7 +193,6 @@ sum(a[!is.na(a)]) / (5 * 243 * mean(endTicks))
 
 # LP
 a = (rawLPData$timeWaited == 0) & (rawLPData$rewardDelays != 0)
-sum(a[!is.na(a)]) / 5 / 243
 endTicks = apply(rawLPData$rewardDelays, MARGIN = c(1,2),
                  FUN = function(x) match(0, x) - 1)
 sum(a[!is.na(a)]) / 5 / 243 / mean(endTicks)

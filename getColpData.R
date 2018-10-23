@@ -97,6 +97,8 @@ for(c in 1:2){
   if(condName == 'HP') colpTimeWaited$HP = output else colpTimeWaited$LP = output
 }
 
+# quickQuit
+
 
 ### organize colpHPData
 colpHPData = list(totalEarnings = colpTotalEarnings$HP,
