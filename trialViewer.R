@@ -36,7 +36,6 @@ for (nCb in 1 : length(nCombList)){
   wtw = inputColp$wtw[i]
   AUC = inputColp$AUC[i]
   
-  quikQuit = 
   label = sprintf('colp stat, earn: %d, wtw: %.2f, AUC: %.2f',
                   totalEarnings, wtw, AUC)
   
