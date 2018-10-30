@@ -89,21 +89,6 @@ QStarModel = function(para, MSPara, otherPara, cond){
             nextXs  = onsetXs
           }
           
-          # update eligilibity trace
-          # here stepGap meatured between At and At-1
-          junk = rep(0, nTimeStep)
-          junk[xs] = 1
-          es =  gamma^stepGap * lambda * es + junk * c(action == "wait")
-          
-          # update stepGap
-          stepGap = ifelse(trialGoOn, 1, iti / stepDuration)
-          
-          # update action value of quit and wait
-          # here stepGap meatured between At and At+1
-          delta = nextReward + c(gamma^(stepGap) * max(ws[nextXs], vaQuit)) -
-                                           ifelse(action == 'wait', vaWait, vaQuit)
-          ws = ws + phi * delta * es
-          
           # update xs and stepGap
           xs = nextXs
           
@@ -117,6 +102,12 @@ QStarModel = function(para, MSPara, otherPara, cond){
             break
           }
         }  # one trial end
+        
+        # update action value of quit and wait
+        # here stepGap meatured between At and At+1
+        delta = rep(nextReward, t) * gamma ^ rev((1 : t) - 1) - ws[1:t]
+        ws[1:t] = ws[1:t] + phi * delta 
+        
         totalSecs = totalSecs + iti+ ifelse(getReward, rewardDelay, timeWaited[tIdx])
         endTimes[tIdx] = totalSecs
       } # simulation end
