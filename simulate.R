@@ -101,7 +101,8 @@ QStarModel = function(para, MSPara, otherPara, cond){
           # update action value of quit and wait
           # here stepGap meatured between At and At+1
           delta = nextReward + c(gamma^(stepGap) * max(ws[nextXs], vaQuit)) -
-                                           ifelse(action == 'wait', vaWait, vaQuit)
+                                          ifelse(action == 'wait', vaWait, vaQuit)
+          # anything wrong with the delta here?
           ws = ws + phi * delta * es
           
           # update xs and stepGap

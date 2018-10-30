@@ -14,6 +14,7 @@ source('wtwSettings.R')
 nPara = 5
 nValue = 3
 tMax = otherPara[['tMax']]
+nComb = nValue ^ nPara 
 initialSpace = matrix(NA, nValue^nPara, nPara)
 initialSpace[,1] = rep(seq(0.2, 0.8, 0.3), each = nValue^(nPara - 1)) # phi
 initialSpace[,2] = rep(rep(seq(8,24, 8), each = nValue), nValue^(nPara - 2)) # tau
@@ -144,10 +145,9 @@ ggplot(plotData, aes(condition, AUC)) + geom_jitter(aes(color =  earningRank ), 
 fileName = file.path(outFile, "acuCompare.pdf")
 ggsave(fileName, width = 12, height = 8)
 
-plotData2 = plotData[rep(initialSpace[,2] == 24, 2), ]
 ggplot(plotData2[plotData2$condition == 'LP',], aes(AUC, totalEarnings)) + geom_point() +
   saveTheme + ylab('Total earnings')
-fileName = file.path(outFile, "AUCLP_earningsLP2.pdf") 
+fileName = file.path(outFile, "AUCLP_earnings.pdf") 
 ggsave(fileName, width = 6, height = 4)
 
 

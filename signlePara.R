@@ -29,7 +29,7 @@ initialSpace[,4] = rep(rep(seq(0.90, 0.98, 0.04), each = nValue^3), nValue^(nPar
 initialSpace[,5] = rep(rep(seq(2, 8, 3), each = nValue^4), nValue^(nPara - 5)) 
 
 ########### simulate #############
-combIdx = 160
+combIdx = 192
 rIdx = 2
 stepDuration = 0.5;
 
@@ -103,7 +103,9 @@ for(i in 2 : endTick){
   label = sprintf('last, rwd = %d, tw = %.2f; rwd = %d, tw =%.2f',
                   tempt$trialEarnings[i-1], waitDuration[i-1],
                   tempt$trialEarnings[i], waitDuration[i])
-  p = ggplot(plotData, aes(time, va, color = action)) + geom_line() + ggtitle(label) + xlab('step')
+  p = ggplot(plotData, aes(time, va, color = action)) + geom_line() +
+    geom_vline(xintercept = match(NA,tempt$vaWaits[,i])) +
+    ggtitle(label) + xlab('step')
   # plotData$waitProb = waitProb[,i]
   # p = ggplot(plotData[plotData$action == 'wait',], aes(time, waitProb)) + geom_line()+
   #   ggtitle(label) + xlim(c(1,3)) + xlab('step')
