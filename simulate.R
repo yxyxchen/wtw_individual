@@ -106,7 +106,7 @@ QStarModel = function(para, MSPara, otherPara, cond){
         # update action value of quit and wait
         # here stepGap meatured between At and At+1
         delta = rep(nextReward, t) * gamma ^ rev((1 : t) - 1) - ws[1:t]
-        ws[1:t] = ws[1:t] + phi * delta 
+        ws[1:t] = ws[1:t] + delta / (tIdx) # use an incremental method 
         
         totalSecs = totalSecs + iti+ ifelse(getReward, rewardDelay, timeWaited[tIdx])
         endTimes[tIdx] = totalSecs

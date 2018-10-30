@@ -79,21 +79,5 @@ optimWaitTimes$LP = trialTicks$LP[which.max(LP)]
 optimRewardRates = list()
 optimRewardRates$HP = max(HP)
 optimRewardRates$LP = max(LP)
-  
-# # plot rewardRate
-# for(c in 1:2){
-#   thisCond = conditionNames[c];
-#   plotData = data.frame(rewardRate = rewardRate[[thisCond]],
-#                         waitThreshold = trialTicks[[thisCond]] )
-#   opRewardRate = max(plotData$rewardRate);
-#   opWaitThreshold = plotData$waitThreshold[which.max(plotData$rewardRate)]
-#   opRewardRate * blockSecs
-#   ggplot(plotData, aes(waitThreshold, rewardRate)) + geom_point(size = 1) +
-#     geom_vline(xintercept = opWaitThreshold, size = 1, color = 'red', linetype  = 2) + 
-#     xlab('Wait threshold / s') + ylab('Reward rate') + saveTheme  + ggtitle(thisCond)
-#   fileName = sprintf("figures/rewardRate%s.pdf", thisCond)
-#   ggsave(fileName, width = 6, height = 4)
-# }
-
 
 

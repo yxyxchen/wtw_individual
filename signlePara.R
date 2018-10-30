@@ -36,7 +36,8 @@ stepDuration = 0.5;
 #  [1] 160 192 195 196 197 198 213 215 217 218 219 220 221 222 223 224 225 226 227
 # 228 229 230 231 232 233 234 235 236 237 238 239 240 241 242 243
 para = initialSpace[combIdx,] 
-para[5] = 3
+para[3] = 0.90
+para[5] = 1
 tempt = QStarModel(para, MSPara, otherPara, cond)
 
 # summarise earnings, AUC, wtw 
