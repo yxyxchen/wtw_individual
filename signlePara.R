@@ -36,6 +36,7 @@ stepDuration = 0.5;
 #  [1] 160 192 195 196 197 198 213 215 217 218 219 220 221 222 223 224 225 226 227
 # 228 229 230 231 232 233 234 235 236 237 238 239 240 241 242 243
 para = initialSpace[combIdx,] 
+para[1] = 0.05
 
 tempt = QStarModel(para, MSPara, otherPara, cond)
 
@@ -69,6 +70,12 @@ plotData = data.frame(pSurvival = kmscResults$kmOnGrid, time = trialTicks[[condN
 ggplot(plotData, aes(time, pSurvival)) + geom_line() + ylim(c(0, 1)) + displayTheme +
   ggtitle(label)
 
+#probability of wait
+tau = para[2]
+waitProb = exp(vaWaits * tau) / (exp(vaWaits*tau) + exp(vaQuits* tau))
+plotData$waitProb = waitProb[,endTick]
+ggplot(plotData[plotData$action == 'wait',], aes(time, waitProb)) + geom_line()
+
 # check ws
 # 
 vaWaits = tempt$vaWaits
@@ -96,21 +103,14 @@ for(i in 2 : endTick){
   label = sprintf('last, rwd = %d, tw = %.2f; rwd = %d, tw =%.2f',
                   tempt$trialEarnings[i-1], waitDuration[i-1],
                   tempt$trialEarnings[i], waitDuration[i])
-  # p = ggplot(plotData, aes(time, va, color = action)) + geom_line() + ggtitle(label) +
-  #   xlim(c(1,3)) + xlab('step')
-  plotData$waitProb = waitProb[,i]
-  p = ggplot(plotData[plotData$action == 'wait',], aes(time, waitProb)) + geom_line()+
-    ggtitle(label) + xlim(c(1,3)) + xlab('step')
+  p = ggplot(plotData, aes(time, va, color = action)) + geom_line() + ggtitle(label) + xlab('step')
+  # plotData$waitProb = waitProb[,i]
+  # p = ggplot(plotData[plotData$action == 'wait',], aes(time, waitProb)) + geom_line()+
+  #   ggtitle(label) + xlim(c(1,3)) + xlab('step')
   print(p)
   readline(prompt = paste(i, '(hit ENTER to continue)'))
 }
 
-
-# probability of wait
-tau = para[2]
-waitProb = exp(vaWaits * tau) / (exp(vaWaits*tau) + exp(vaQuits* tau))
-plotData$waitProb = waitProb[,endTick]
-ggplot(plotData[plotData$action == 'wait',], aes(time, waitProb)) + geom_line()
 
 # quikQuit
 endTick = match(0, tempt$rewardDelays) - 1
