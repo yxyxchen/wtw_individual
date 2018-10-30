@@ -5,6 +5,7 @@ source('simulate.R') # QStar model
 source('wtwSettings.R') # wtw settings for both HP and LP
 source('getPara.R') # functions to get MSPara and otherPara from inputs and wtwSettings
 source('helperFxs.R')
+source('simulateViewer.R')
 ################ selec condition ################
 # cond input
 condIdx = 2
@@ -36,9 +37,10 @@ stepDuration = 0.5;
 #  [1] 160 192 195 196 197 198 213 215 217 218 219 220 221 222 223 224 225 226 227
 # 228 229 230 231 232 233 234 235 236 237 238 239 240 241 242 243
 para = initialSpace[combIdx,] 
-para[1] = 0.05
+para[5] = 3
 
-tempt = QStarModel(para, MSPara, otherPara, cond)
+
+tempt = ManualModel(para, MSPara, otherPara, cond)
 
 # summarise earnings, AUC, wtw 
 totalEarnings = sum(tempt$trialEarnings)
@@ -65,16 +67,18 @@ endTick = match(0, tempt$rewardDelays) - 1
 blockData = blockData[1:endTick, ]
 trialPlots(blockData, label)
 
+
+
 # plot survival
 plotData = data.frame(pSurvival = kmscResults$kmOnGrid, time = trialTicks[[condName]])
 ggplot(plotData, aes(time, pSurvival)) + geom_line() + ylim(c(0, 1)) + displayTheme +
   ggtitle(label)
 
+
 #probability of wait
 tau = para[2]
 waitProb = exp(vaWaits * tau) / (exp(vaWaits*tau) + exp(vaQuits* tau))
 plotData$waitProb = waitProb[,endTick]
-ggplot(plotData[plotData$action == 'wait',], aes(time, waitProb)) + geom_line()
 
 # check ws
 # 
@@ -105,7 +109,7 @@ for(i in 2 : endTick){
                   tempt$trialEarnings[i], waitDuration[i])
   p = ggplot(plotData, aes(time, va, color = action)) + geom_line() +
     geom_vline(xintercept = match(NA,tempt$vaWaits[,i])) +
-    ggtitle(label) + xlab('step')
+    ggtitle(label) + xlab('step') 
   # plotData$waitProb = waitProb[,i]
   # p = ggplot(plotData[plotData$action == 'wait',], aes(time, waitProb)) + geom_line()+
   #   ggtitle(label) + xlim(c(1,3)) + xlab('step')
