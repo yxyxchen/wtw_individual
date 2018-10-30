@@ -13,13 +13,12 @@ source('wtwSettings.R')
 # initialSpace
 nPara = 5
 nValue = 3
-nComb = nValue ^ nPara
 tMax = otherPara[['tMax']]
 initialSpace = matrix(NA, nValue^nPara, nPara)
 initialSpace[,1] = rep(seq(0.2, 0.8, 0.3), each = nValue^(nPara - 1)) # phi
-initialSpace[,2] = rep(rep(seq(0.2, 0.8, 0.3), each = nValue), nValue^(nPara - 2)) # tau
-initialSpace[,3] = rep(rep(seq(0.2, 0.8, 0.3), each = nValue^2), nValue^(nPara - 3)) 
-initialSpace[,4] = rep(rep(seq(0.2, 0.8, 0.3), each = nValue^3), nValue^(nPara - 4)) 
+initialSpace[,2] = rep(rep(seq(8,24, 8), each = nValue), nValue^(nPara - 2)) # tau
+initialSpace[,3] = rep(rep(seq(0.90, 0.98, 0.04), each = nValue^2), nValue^(nPara - 3)) 
+initialSpace[,4] = rep(rep(seq(0.90, 0.98, 0.04), each = nValue^3), nValue^(nPara - 4)) 
 initialSpace[,5] = rep(rep(seq(2, 8, 3), each = nValue^4), nValue^(nPara - 5)) 
 
 #### 
@@ -49,7 +48,7 @@ summarise(group_by(plotData, condition),
 nPara = 5
 nValue = 3
 paraNames = c("phi", "tau", "gamma", "lambda", "wIni")
-paraValues = seq(0.2, 0.8, 0.3) 
+paraValues = c(1,2,3)
 summaryData = data.frame(condition = rep(c("HP", "LP"), each = nValue, nPara),
                          paraNames = rep(paraNames, each = nValue * 2),
                          paraValues = rep(paraValues, nPara * 2))
@@ -131,7 +130,6 @@ for(c in 1 : 2){
 }
 
 ######### plot aucCompare and wtwCompare #######
-
 plotData = rbind(as.data.frame(colpHPData[c(1,5,6,7)]),
                  as.data.frame(colpLPData[c(1,5,6,7)]))
 plotData$condition = rep(c('HP', 'LP'), each = length(colpHPData$totalEarnings))
@@ -146,25 +144,13 @@ ggplot(plotData, aes(condition, AUC)) + geom_jitter(aes(color =  earningRank ), 
 fileName = file.path(outFile, "acuCompare.pdf")
 ggsave(fileName, width = 12, height = 8)
 
-#### plot AUCLP and earningsLP
-plotData = rbind(as.data.frame(colpHPData[c(1,5,6,7)]),
-                 as.data.frame(colpLPData[c(1,5,6,7)]))
-plotData$condition = rep(c('HP', 'LP'), each = length(colpHPData$totalEarnings))
-
-plotData = plotData %>% arrange(totalEarnings) %>%group_by(condition) %>%
-  mutate(earningRank = rank(totalEarnings, ties.method = "first"))
-
-ggplot(plotData, aes(condition, AUC)) + geom_jitter(aes(color =  earningRank ), size = 4) +
-  scale_color_gradient(low="red", high="yellow", name = 'Earning ranking') +
-  geom_segment(aes(x= 0.7, xend = 1.3, y=optimWaitTimes$HP,yend=optimWaitTimes$HP), size = 2) +
-  geom_segment(aes(x= 1.7, xend = 2.3, y=optimWaitTimes$LP,yend=optimWaitTimes$LP), size = 2) + saveTheme
-fileName = file.path(outFile, "acuCompare.pdf")
-ggsave(fileName, width = 12, height = 8)
-
-ggplot(plotData[plotData$condition == 'LP',], aes(AUC, totalEarnings)) + geom_point() +
+plotData2 = plotData[rep(initialSpace[,2] == 24, 2), ]
+ggplot(plotData2[plotData2$condition == 'LP',], aes(AUC, totalEarnings)) + geom_point() +
   saveTheme + ylab('Total earnings')
-fileName = file.path(outFile, "AUCLP_earningsLP.pdf") 
+fileName = file.path(outFile, "AUCLP_earningsLP2.pdf") 
 ggsave(fileName, width = 6, height = 4)
+
+
 #### wtw
 ggplot(plotData, aes(condition, wtw)) + geom_jitter(aes(color =  earningRank ), size = 4) +
   scale_color_gradient(low="red", high="yellow", name = 'Earning ranking') +
@@ -173,15 +159,6 @@ ggplot(plotData, aes(condition, wtw)) + geom_jitter(aes(color =  earningRank ), 
 fileName = file.path(outFile, "wtwCompare.pdf")
 ggsave(fileName, width = 12, height = 8)
 
-
-### timeWaited
-
-ggplot(plotData, aes(condition, timeWaited)) + geom_jitter(aes(color =  earningRank ), size = 4) +
-  scale_color_gradient(low="red", high="yellow", name = 'Earning ranking') +
-  geom_segment(aes(x= 0.7, xend = 1.3, y=optimWaitTimes$HP,yend=optimWaitTimes$HP), size = 2) +
-  geom_segment(aes(x= 1.7, xend = 2.3, y=optimWaitTimes$LP,yend=optimWaitTimes$LP), size = 2) + displayTheme
-fileName = file.path(outFile, "timeWaited.pdf")
-ggsave(fileName, width = 12, height = 8)
 
 #### check immediete quit
 # HP 

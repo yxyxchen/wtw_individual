@@ -22,7 +22,7 @@ tMax = tMaxs[condIdx]
 trialTick = trialTicks[[condIdx]] # so here if use [2] then get a list
 # choose combs you want to plot
 nCombList = which(inputColp$AUC <= 6 & inputColp$AUC >= 2) # combs supposed to earn most 
-#nCombList = which(inputColp$totalEarnings > 410) # combs actually earn most
+nCombList = which(inputColp$totalEarnings <200) 
 plotTrialData = T
 plotKMSC= T
 drawTimeSample = T
@@ -38,6 +38,7 @@ for (nCb in 1 : length(nCombList)){
   
   label = sprintf('colp stat, earn: %d, wtw: %.2f, AUC: %.2f',
                   totalEarnings, wtw, AUC)
+  print(initialSpace[i,])
   
   if(plotTrialData){
     # prepare trialData

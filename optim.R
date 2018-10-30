@@ -15,7 +15,7 @@ source('getPara.R') # functions to get MSPara and otherPara from inputs and wtwS
 
 ################ input ################
 # cond input
-condIdx = 2
+condIdx = 1
 cond = conditions[condIdx];
 condName = conditionNames[condIdx]
 condColor = conditionColors[condIdx]
@@ -32,9 +32,9 @@ nValue = 3
 tMax = otherPara[['tMax']]
 initialSpace = matrix(NA, nValue^nPara, nPara)
 initialSpace[,1] = rep(seq(0.2, 0.8, 0.3), each = nValue^(nPara - 1)) # phi
-initialSpace[,2] = rep(rep(seq(0.2, 0.8, 0.3), each = nValue), nValue^(nPara - 2)) # tau
-initialSpace[,3] = rep(rep(seq(0.2, 0.8, 0.3), each = nValue^2), nValue^(nPara - 3)) 
-initialSpace[,4] = rep(rep(seq(0.2, 0.8, 0.3), each = nValue^3), nValue^(nPara - 4)) 
+initialSpace[,2] = rep(rep(seq(8,24, 8), each = nValue), nValue^(nPara - 2)) # tau
+initialSpace[,3] = rep(rep(seq(0.90, 0.98, 0.04), each = nValue^2), nValue^(nPara - 3)) 
+initialSpace[,4] = rep(rep(seq(0.90, 0.98, 0.04), each = nValue^3), nValue^(nPara - 4)) 
 initialSpace[,5] = rep(rep(seq(2, 8, 3), each = nValue^4), nValue^(nPara - 5)) 
 
 # set seed

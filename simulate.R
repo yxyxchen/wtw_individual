@@ -129,21 +129,3 @@ QStarModel = function(para, MSPara, otherPara, cond){
       return(outputs)
 } #end of the function
 
-# 
-# waitDuration =timeWaited
-# rewardDelay = rewardDelays
-# quitIdx = (trialEarnings == 0)
-# 
-# waitDuration[is.na(waitDuration)] = rewardDelay[is.na(waitDuration)]
-# endTick = match(0,rewardDelay)
-# waitDuration = waitDuration[1 : (endTick - 1)]
-# quitIdx = quitIdx[1 : (endTick - 1)]
-# 
-# sellTime = cumsum(waitDuration);
-# itiTime = rep(iti, length(waitDuration))
-# itiTime = c(0, itiTime[2 : length(itiTime)]) # itiTime before the ith step
-# itiTime = cumsum(itiTime)
-# sellTime = sellTime + itiTime
-# 
-# a = data.frame(endTimes[1:length(sellTime)], sellTime, timeWaited[1:length(sellTime)])
-
