@@ -136,11 +136,15 @@ ggplot(plotData, aes(condition, AUC)) + geom_jitter(aes(color =  earningRank ), 
 fileName = file.path(outFile, "acuCompare.pdf")
 ggsave(fileName, width = 12, height = 8)
 
-ggplot(plotData2[plotData2$condition == 'LP',], aes(AUC, totalEarnings)) + geom_point() +
-  saveTheme + ylab('Total earnings')
+ggplot(plotData[plotData$condition == 'LP',], aes(AUC, totalEarnings)) + geom_point(size = 1.5) +
+  saveTheme + ylab('Total earnings') + xlim(c(0, tMaxs[2]))
 fileName = file.path(outFile, "AUCLP_earnings.pdf") 
 ggsave(fileName, width = 6, height = 4)
 
+ggplot(plotData[plotData$condition == 'HP',], aes(AUC, totalEarnings)) + geom_point(size = 1.5) +
+  saveTheme + ylab('Total earnings') + xlim(c(0, tMaxs[1]))
+fileName = file.path(outFile, "AUCHP_earnings.pdf") 
+ggsave(fileName, width = 6, height = 4)
 
 #### wtw
 ggplot(plotData, aes(condition, wtw)) + geom_jitter(aes(color =  earningRank ), size = 4) +
