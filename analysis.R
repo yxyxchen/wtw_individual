@@ -246,6 +246,17 @@ dir.create('figures')
 ggsave("figures/earningExp.pdf", width = 8, height = 4)
 
 
+#### plot AUC and total earnings in LP
+plotData = data.frame(AUC = groupData$AUC, totalEarnings = groupData$totalEarnings,
+                      condition = groupData$condition)
+ggplot(plotData, aes(AUC, totalEarnings)) + geom_point(size = 3) + facet_wrap(.~condition) + saveTheme+
+  xlab('AUC /s') + ylab('Total earnings')
+ggsave('exp_figures/AUC_earnings.pdf', width = 6, height = 4)
 
+plotData = data.frame(AUC = groupData$AUC, totalEarnings = groupData$totalEarnings,
+                      condition = groupData$condition)
+ggplot(plotData[plotData$condition == 'LP',], aes(AUC, totalEarnings)) + geom_point(size = 1.5) + saveTheme+
+  xlab('AUC /s') + ylab('Total earnings') + xlim(c(0, tMaxs[2]))
+ggsave('exp_figures/AUCLP_earningsLP.pdf', width = 6, height = 4)
 
 
