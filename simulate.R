@@ -103,17 +103,18 @@ QStarModel = function(para, MSPara, otherPara, cond){
           
           # update eligilibity trace
           # here stepGap meatured between At and At-1
-          es =  gamma^stepGap * lambda * es + xs * c(action == "wait")
-          
-          # update stepGap
-          stepGap = ifelse(trialGoOn, 1, iti / stepDuration)
-          
-          # update action value of quit and wait
-          # here stepGap meatured between At and At+1
-          delta = nextReward + c(gamma^(stepGap) * max(nextXs %*% ws, vaQuit) -
-                                           ifelse(action == 'wait', vaWait, vaQuit))
-          ws = ws + phi * delta * es
-          
+          if(action == 'wait'){
+            es =  gamma^stepGap * lambda * es + xs * c(action == "wait")
+            
+            # update stepGap
+            stepGap = ifelse(trialGoOn, 1, iti / stepDuration)
+            
+            # update action value of quit and wait
+            # here stepGap meatured between At and At+1
+            delta = nextReward + c(gamma^(stepGap) * max(nextXs %*% ws, vaQuit) -
+                                     ifelse(action == 'wait', vaWait, vaQuit))
+            ws = ws + phi * delta * es
+          }
           # update xs and stepGap
           xs = nextXs
           
@@ -138,22 +139,4 @@ QStarModel = function(para, MSPara, otherPara, cond){
                      "vaQuits" = vaQuits)
       return(outputs)
 } #end of the function
-
-# 
-# waitDuration =timeWaited
-# rewardDelay = rewardDelays
-# quitIdx = (trialEarnings == 0)
-# 
-# waitDuration[is.na(waitDuration)] = rewardDelay[is.na(waitDuration)]
-# endTick = match(0,rewardDelay)
-# waitDuration = waitDuration[1 : (endTick - 1)]
-# quitIdx = quitIdx[1 : (endTick - 1)]
-# 
-# sellTime = cumsum(waitDuration);
-# itiTime = rep(iti, length(waitDuration))
-# itiTime = c(0, itiTime[2 : length(itiTime)]) # itiTime before the ith step
-# itiTime = cumsum(itiTime)
-# sellTime = sellTime + itiTime
-# 
-# a = data.frame(endTimes[1:length(sellTime)], sellTime, timeWaited[1:length(sellTime)])
 
