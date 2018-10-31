@@ -166,9 +166,28 @@ endTicks = apply(rawLPData$rewardDelays, MARGIN = c(1,2),
 sum(a[!is.na(a)]) / 5 / 243 / mean(endTicks)
 
 #### check wtw change
+# HP
+meanValues = c(apply(rawWTW$HP, MARGIN = 3, FUN = mean), 
+               apply(rawWTW$LP, MARGIN = 3, FUN = mean))
+stdValues = c(apply(rawWTW$HP, MARGIN = 3, FUN = sd), 
+              apply(rawWTW$LP, MARGIN = 3, FUN = sd))
+plotData = data.frame(meanValues, stdValues,
+                      time = rep(tGrid, time = 2),
+                      condition = rep(c('HP', 'LP'), each = length(tGrid)),
+                      minValues = meanValues - stdValues / sqrt(dim(rawWTW$HP)[1]),
+                      maxValues = meanValues + stdValues / sqrt(dim(rawWTW$HP)[1]))
+
+ggplot(plotData, aes(time, meanValues, color = condition)) + 
+  geom_ribbon(data = plotData[plotData$condition == 'HP',], aes(ymin=minValues, ymax=maxValues),linetype=0, alpha = 0.1, color = "#bababa") +
+  geom_ribbon(data = plotData[plotData$condition == 'LP',], aes(ymin=minValues, ymax=maxValues),linetype=0, alpha = 0.1, color = "#bababa") + 
+  geom_line(size = 1) + xlab('Time in block / s') + ylab('WTW / s') + saveTheme 
+fileName = file.path(outFile, "wtwTimeSeries.pdf")
+ggsave(fileName, width = 12, height = 8)
+
+## check respondness
 
 plotData = data.frame(HPAUC = colpHPData$AUC, LPAUC = colpLPData$AUC)
-ggplot(plotData, aes(HPAUC, LPAUC)) + geom_point(shape = 3) + saveTheme +
+ggplot(plotData, aes(HPAUC, LPAUC)) + geom_point(shape = 3, size = 5) + saveTheme +
   xlab('HPAUC / s' ) + ylab('LPAUC / s') 
 fileName = sprintf('QStar_figures/responsiveness.pdf')
 ggsave(fileName, width = 8, height = 8)
