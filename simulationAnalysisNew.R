@@ -11,16 +11,7 @@ source('plotTheme.R')
 source('wtwSettings.R')
 
 # initialSpace
-nPara = 5
-nValue = 3
-nComb = nValue ^ nPara
-tMax = otherPara[['tMax']]
-initialSpace = matrix(NA, nValue^nPara, nPara)
-initialSpace[,1] = rep(seq(0.2, 0.8, 0.3), each = nValue^(nPara - 1)) # phi
-initialSpace[,2] = rep(rep(seq(0.2, 0.8, 0.3), each = nValue), nValue^(nPara - 2)) # tau
-initialSpace[,3] = rep(rep(seq(0.2, 0.8, 0.3), each = nValue^2), nValue^(nPara - 3)) 
-initialSpace[,4] = rep(rep(seq(0.2, 0.8, 0.3), each = nValue^3), nValue^(nPara - 4)) 
-initialSpace[,5] = rep(rep(seq(2, 8, 3), each = nValue^4), nValue^(nPara - 5)) 
+load('QStarData/initialSpace.RData')
 
 #### 
 load('QStarData/colpData.RData')
@@ -46,9 +37,6 @@ summarise(group_by(plotData, condition),
           maxEarning = max(totalEarnings))
 
 ############ summarise para effects on total earnings ###########
-nPara = 5
-nValue = 3
-paraNames = c("phi", "tau", "gamma", "lambda", "wIni")
 paraValues = seq(0.2, 0.8, 0.3) 
 summaryData = data.frame(condition = rep(c("HP", "LP"), each = nValue, nPara),
                          paraNames = rep(paraNames, each = nValue * 2),
