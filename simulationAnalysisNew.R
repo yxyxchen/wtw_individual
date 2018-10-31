@@ -11,27 +11,17 @@ source('plotTheme.R')
 source('wtwSettings.R')
 
 # initialSpace
-nPara = 5
-nValue = 3
-tMax = otherPara[['tMax']]
-initialSpace = matrix(NA, nValue^nPara, nPara)
-initialSpace[,1] = rep(seq(0.2, 0.8, 0.3), each = nValue^(nPara - 1)) # phi
-initialSpace[,2] = rep(rep(seq(8,24, 8), each = nValue), nValue^(nPara - 2)) # tau
-initialSpace[,3] = rep(rep(seq(0.90, 0.98, 0.04), each = nValue^2), nValue^(nPara - 3)) 
-initialSpace[,4] = rep(rep(seq(0.90, 0.98, 0.04), each = nValue^3), nValue^(nPara - 4)) 
-initialSpace[,5] = rep(rep(seq(2, 8, 3), each = nValue^4), nValue^(nPara - 5)) 
+load( file = 'QStarData/initialSpace.RData') 
 
 #### 
 load('QStarData/colpData.RData')
 load('QStarData/rawWTW.RData')
 load('QStarData/hdrData.RData')
 ####
-
 ####### plot distribution of totalEarnings
 plotData = data.frame(totalEarnings = c(colpHPData$totalEarnings, colpLPData$totalEarnings),
-                      condition = rep(c("HP", "LP"), each = nComb), phi = initialSpace[,1],
-                      tau = initialSpace[,2], gamma = initialSpace[,3],
-                      lambda = initialSpace[,4], wIni = initialSpace[,5]
+                      condition = rep(c("HP", "LP"), each = nComb), tau = initialSpace[,1],
+                      gamma = initialSpace[,2]
 )
 
 ggplot(plotData, aes(totalEarnings)) + geom_histogram(bins = 15) +
@@ -45,10 +35,7 @@ summarise(group_by(plotData, condition),
           maxEarning = max(totalEarnings))
 
 ############ summarise para effects on total earnings ###########
-nPara = 5
-nValue = 3
-paraNames = c("phi", "tau", "gamma", "lambda", "wIni")
-paraValues = c(1,2,3)
+paraValues = 1 : nValue
 summaryData = data.frame(condition = rep(c("HP", "LP"), each = nValue, nPara),
                          paraNames = rep(paraNames, each = nValue * 2),
                          paraValues = rep(paraValues, nPara * 2))
@@ -56,16 +43,10 @@ summaryData$paraNames = factor(summaryData$paraNames, levels = paraNames)
 # summarise mu and sd
 mu = rep(NA, nrow(summaryData))
 std = rep(NA, nrow(summaryData))
-tempt = summarise(group_by(plotData, condition, phi), mu = mean(totalEarnings), std = sd(totalEarnings))
-mu[1:6] = tempt$mu; std[1:6] = tempt$std
 tempt = summarise(group_by(plotData, condition, tau), mu = mean(totalEarnings), std = sd(totalEarnings))
-mu[7:12] = tempt$mu; std[7:12] = tempt$std
+mu[1: (nValue * 2)] = tempt$mu; std[1: (nValue * 2)]= tempt$std
 tempt = summarise(group_by(plotData, condition, gamma), mu = mean(totalEarnings), std = sd(totalEarnings))
-mu[13:18] = tempt$mu; std[13:18] = tempt$std
-tempt = summarise(group_by(plotData, condition, lambda), mu = mean(totalEarnings), std = sd(totalEarnings))
-mu[19:24] = tempt$mu; std[19:24] = tempt$std
-tempt = summarise(group_by(plotData, condition, wIni), mu = mean(totalEarnings), std = sd(totalEarnings))
-mu[25:30] = tempt$mu; std[25:30] = tempt$std
+mu[(nValue * 2 + 1): (nValue * 4)] = tempt$mu; std[(nValue * 2 + 1): (nValue * 4)]= tempt$std
 summaryData$mu = mu
 summaryData$std = std
 summaryData$ymin = mu - std
@@ -130,8 +111,13 @@ for(c in 1 : 2){
 }
 
 ######### plot aucCompare and wtwCompare #######
-plotData = rbind(as.data.frame(colpHPData[c(1,5,6,7)]),
-                 as.data.frame(colpLPData[c(1,5,6,7)]))
+p1 = matrix(c(colpHPData[[1]],colpHPData[[5]], colpHPData[[6]],colpHPData[[7]]),
+ncol = 4)
+p2 = matrix(c(colpLPData[[1]],colpLPData[[5]], colpLPData[[6]],colpLPData[[7]]),
+            ncol = 4)
+plotData = rbind(p1, p2)
+plotData = as.data.frame(plotData)
+colnames(plotData) = names(colpHPData)[c(1,5,6,7)]
 plotData$condition = rep(c('HP', 'LP'), each = length(colpHPData$totalEarnings))
 
 plotData = plotData %>% arrange(totalEarnings) %>%group_by(condition) %>%
@@ -144,10 +130,9 @@ ggplot(plotData, aes(condition, AUC)) + geom_jitter(aes(color =  earningRank ), 
 fileName = file.path(outFile, "acuCompare.pdf")
 ggsave(fileName, width = 12, height = 8)
 
-plotData2 = plotData[rep(initialSpace[,2] == 24, 2), ]
-ggplot(plotData2[plotData2$condition == 'LP',], aes(AUC, totalEarnings)) + geom_point() +
+ggplot(plotData[plotData$condition == 'LP',], aes(AUC, totalEarnings)) + geom_point() +
   saveTheme + ylab('Total earnings')
-fileName = file.path(outFile, "AUCLP_earningsLP2.pdf") 
+fileName = file.path(outFile, "AUCLP_earnings.pdf") 
 ggsave(fileName, width = 6, height = 4)
 
 

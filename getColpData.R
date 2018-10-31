@@ -86,8 +86,8 @@ colpTimeWaited = list()
 for(c in 1:2){
   condName = conditionNames[c]
   if(condName == 'HP') inputData = rawHPData else  inputData = rawLPData 
-  output = matrix(NA, length(colpHPData$AUC), 5)
-  for(i in 1 : length(colpHPData$AUC)){
+  output = matrix(NA, nrow = dim(rawHPData$ws)[1], ncol = 5)
+  for(i in 1 : dim(rawHPData$ws)[1]){
     for(j in 1 : 5){
       timeWaited = inputData[['timeWaited']][i, j, 1 : endTicks[i,j]]
       output[i, j] = mean(timeWaited[!is.na(timeWaited)])
@@ -96,7 +96,6 @@ for(c in 1:2){
   output = rowSums(output) / ncol(output)
   if(condName == 'HP') colpTimeWaited$HP = output else colpTimeWaited$LP = output
 }
-
 # quickQuit
 
 
@@ -106,17 +105,17 @@ colpHPData = list(totalEarnings = colpTotalEarnings$HP,
                   vaQuits = colpVaQuits$HP,
                   vaWaits = colpVaWaits$HP,
                   AUC = colpAUC$HP,
-                  timeWaited = colpTimeWaited$HP,
+                  timeWaited = colpTimeWaited[['HP']],
                   wtw = apply(rawWTW$HP, MARGIN = 1, mean))
 colpLPData = list(totalEarnings = colpTotalEarnings$LP,
                   trialEarnings = colpTrialEarnings$LP,
                   vaQuits = colpVaQuits$LP,
                   vaWaits = colpVaWaits$LP,
                   AUC = colpAUC$LP,
-                  timeWaited = colpTimeWaited$LP,
+                  timeWaited = colpTimeWaited[['LP']],
                   wtw = apply(rawWTW$LP, MARGIN = 1, mean)
 )
-
+outFile = 'QStarData'
 fileName = sprintf("%s/colpData.RData", outFile)
 save('colpLPData', 'colpHPData', file = fileName )
 fileName = sprintf("%s/rawWTW.RData", outFile)

@@ -29,15 +29,10 @@ initialSpace[,4] = rep(rep(seq(0.90, 0.98, 0.04), each = nValue^3), nValue^(nPar
 initialSpace[,5] = rep(rep(seq(2, 8, 3), each = nValue^4), nValue^(nPara - 5)) 
 
 ########### simulate #############
-combIdx = 160
-rIdx = 2
 stepDuration = 0.5;
-
-#  [1] 160 192 195 196 197 198 213 215 217 218 219 220 221 222 223 224 225 226 227
-# 228 229 230 231 232 233 234 235 236 237 238 239 240 241 242 243
-para = initialSpace[combIdx,] 
-para[3] = 0.90
-para[5] = 1
+para = list()
+para[1] = 5 # tau
+para[2] = 0.05 # gamma
 tempt = QStarModel(para, MSPara, otherPara, cond)
 
 # summarise earnings, AUC, wtw 
@@ -75,8 +70,8 @@ ggplot(plotData, aes(time, pSurvival)) + geom_line() + ylim(c(0, 1)) + displayTh
 vaWaits = tempt$vaWaits
 vaQuits = tempt$vaQuits
 
-wIni = para[5]
-gamma = para[3]
+wIni = para[['wIni']]
+gamma = para[['gamma']]
 nTimeStep = otherPara$tMax / otherPara$stepDuration
 
 vaWaits[is.na(vaWaits[,1]),1] = rep(wIni, sum(is.na(vaWaits[,1])))
@@ -88,8 +83,7 @@ for(i in 2 : endTick){
   vaQuits[is.na(vaQuits[,i]),i] = vaQuits[is.na(vaQuits[,i]),i-1]
 }
 
-for(i in 2 : endTick){
-  cIdx = i
+  cIdx = endTick
   plotData = data.frame(va =c(vaWaits[,cIdx], vaQuits[,cIdx]),
                         time = rep( 1 : (otherPara$tMax / otherPara$stepDuration), 2),
                         action = rep(c('wait', 'quit'),
@@ -97,17 +91,13 @@ for(i in 2 : endTick){
   label = sprintf('last, rwd = %d, tw = %.2f; rwd = %d, tw =%.2f',
                   tempt$trialEarnings[i-1], waitDuration[i-1],
                   tempt$trialEarnings[i], waitDuration[i])
-  p = ggplot(plotData, aes(time, va, color = action)) + geom_line() + ggtitle(label) + xlab('step')
-  # plotData$waitProb = waitProb[,i]
-  # p = ggplot(plotData[plotData$action == 'wait',], aes(time, waitProb)) + geom_line()+
-  #   ggtitle(label) + xlim(c(1,3)) + xlab('step')
-  print(p)
-  readline(prompt = paste(i, '(hit ENTER to continue)'))
-}
+ ggplot(plotData, aes(time, va, color = action)) + geom_line() + ggtitle(label) + xlab('step')
+
+
 
 
 # probability of wait
-tau = para[2]
+tau = para[1]
 waitProb = exp(vaWaits * tau) / (exp(vaWaits*tau) + exp(vaQuits* tau))
 plotData$waitProb = waitProb[,endTick]
 ggplot(plotData[plotData$action == 'wait',], aes(time, waitProb)) + geom_line()

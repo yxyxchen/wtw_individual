@@ -8,10 +8,11 @@ source('wtwSettings.R')
 ####
 load('QStarData/rawdata.RData')
 load('QStarData/colpData.RData')
+load('QStarData//initialSpace.RData')
 
 # prepare
 ####
-condIdx = 2
+condIdx = 1
 cond = conditions[condIdx]
 condName = conditionNames[condIdx]
 
@@ -23,6 +24,8 @@ trialTick = trialTicks[[condIdx]] # so here if use [2] then get a list
 # choose combs you want to plot
 nCombList = which(inputColp$AUC <= 6 & inputColp$AUC >= 2) # combs supposed to earn most 
 nCombList = which(inputColp$totalEarnings <200) 
+hist(initialSpace[nCombList,1])
+
 plotTrialData = T
 plotKMSC= T
 drawTimeSample = T
@@ -69,7 +72,7 @@ for (nCb in 1 : length(nCombList)){
     quitIdx = quitIdx[1 : (endTick - 1)]
     
     kmscResults = kmscSimple(waitDuration, quitIdx, tMax, trialTick)
-    plotData = data.frame(pSurvival = kmscResults$kmOnGrid, time = trialTicks$LP)
+    plotData = data.frame(pSurvival = kmscResults$kmOnGrid, time = trialTicks[[condName]])
     p = ggplot(plotData, aes(time, pSurvival)) + geom_line() + ylim(c(0, 1)) + displayTheme +
       ggtitle(label)
     print(p)

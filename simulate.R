@@ -1,11 +1,10 @@
 # add number of repeation
 QStarModel = function(para, MSPara, otherPara, cond){
-  # 
-  phi = para[1]
-  tau = para[2]
-  gamma = para[3]
-  lambda = para[4]
-  wIni = para[5]
+  
+  tau = para[1]
+  gamma = para[2]
+  wIni = 1
+  
 
   # task para
   source('taskFxs.R')
@@ -23,6 +22,7 @@ QStarModel = function(para, MSPara, otherPara, cond){
   ########### simulation repeatedly ############
   # initialize action value, eligibility trace and stat
   ws = rep(wIni, nTimeStep) # weight vector for "wait", each element for each timeStep
+  wsCount = rep(1, nTimeStep) 
   es = rep(0, nTimeStep); # es vector for "wait"
   onsetXs = 1 # onset state is 1
   xs = onsetXs # every trial starts from the onset state
@@ -105,9 +105,17 @@ QStarModel = function(para, MSPara, otherPara, cond){
         
         # update action value of quit and wait
         # here stepGap meatured between At and At+1
-        delta = rep(nextReward, t) * gamma ^ rev((1 : t) - 1) - ws[1:t]
-        ws[1:t] = ws[1:t] + delta / (tIdx) # use an incremental method 
+        # ideally, not update for quit
+        if(action == 'quit') t = t - 1
+        if(t > 0){
+          delta = rep(nextReward, (t)) * gamma ^ rev((1 : t) - 1) - ws[1:t]
+          
+          ws[1:t] = ws[1:t] + delta / wsCount[1:t] # use an incremental method               
+          wsCount[1:t] = wsCount[1:t] + 1
+        }
+
         
+        # update total secs
         totalSecs = totalSecs + iti+ ifelse(getReward, rewardDelay, timeWaited[tIdx])
         endTimes[tIdx] = totalSecs
       } # simulation end
