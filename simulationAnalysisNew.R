@@ -206,6 +206,9 @@ ggplot(plotData, aes(time, meanValues, color = condition)) +
 fileName = file.path(outFile, "wtwTimeSeries.pdf")
 ggsave(fileName, width = 12, height = 8)
 
-
-
-
+# check out how the model responde to environments 
+plotData = data.frame(HPAUC = colpHPData$AUC, LPAUC = colpLPData$AUC)
+ggplot(plotData, aes(HPAUC, LPAUC)) + geom_point(shape = 3 ) + geom_smooth(method = lm) +
+  xlab('HP AUC/s') + ylab("LP AUC /s") + saveTheme
+fileName = file.path(outFile, "responsiveness.pdf")
+ggsave(fileName, width = 8, height = 8)

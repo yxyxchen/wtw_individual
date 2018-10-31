@@ -21,9 +21,9 @@ inputRaw = if(condName == 'HP') inputRaw = rawHPData else inputRaw = rawLPData
 tMax = tMaxs[condIdx]
 trialTick = trialTicks[[condIdx]] # so here if use [2] then get a list
 # choose combs you want to plot
-nCombList = which(inputColp$AUC <= 6 & inputColp$AUC >= 2) # combs supposed to earn most 
-#nCombList = which(inputColp$totalEarnings > 410) # combs actually earn most
-plotTrialData = T
+nCombList = which(initialSpace[,2] == 8) 
+nCombList = which(inputColp$totalEarnings < 250)
+plotTrialData = F
 plotKMSC= T
 drawTimeSample = T
 
@@ -53,7 +53,7 @@ for (nCb in 1 : length(nCombList)){
     trialPlots(blockData, label)
   }
   
-  if(any(plotTrialData)) {
+  if(plotTrialData) {
     readline(prompt = paste(nCb, '(hit ENTER to continue)'))
   }
 
@@ -69,13 +69,13 @@ for (nCb in 1 : length(nCombList)){
     quitIdx = quitIdx[1 : (endTick - 1)]
     
     kmscResults = kmscSimple(waitDuration, quitIdx, tMax, trialTick)
-    plotData = data.frame(pSurvival = kmscResults$kmOnGrid, time = trialTicks$LP)
+    plotData = data.frame(pSurvival = kmscResults$kmOnGrid, time = trialTicks[[condName]])
     p = ggplot(plotData, aes(time, pSurvival)) + geom_line() + ylim(c(0, 1)) + displayTheme +
       ggtitle(label)
     print(p)
   }
   
-  if(any(plotKMSC)) {
+  if(plotKMSC) {
     readline(prompt = paste(nCb, '(hit ENTER to continue)'))
   }
   
@@ -87,7 +87,7 @@ for (nCb in 1 : length(nCombList)){
     pdf = diff(c(0, cdf)) # hre 0 is the time tick before 0
     
     # 
-    draws = sample(trialTicks$LP, size = 1000, replace = TRUE, prob = pdf)
+    draws = sample(trialTicks[[condName]], size = 1000, replace = TRUE, prob = pdf)
     p = ggplot(data.frame(draws),aes(draws)) + geom_histogram(bins = 50) + xlim(c(0 - 1, tMax+3)) +
       displayTheme + xlab('Wait duration / s') + ggtitle(label)
     print(p)
