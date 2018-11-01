@@ -13,7 +13,7 @@ load('QStarData/initialSpace.RData')
 
 # prepare
 ####
-condIdx = 1
+condIdx = 2
 cond = conditions[condIdx]
 condName = conditionNames[condIdx]
 
@@ -24,7 +24,7 @@ tMax = tMaxs[condIdx]
 trialTick = trialTicks[[condIdx]] # so here if use [2] then get a list
 # choose combs you want to plot
 nCombList = which(inputColp$AUC <= 6 & inputColp$AUC >= 2) # combs supposed to earn most 
-nCombList = which(inputColp$totalEarnings > 300 & inputColp$totalEarnings < 350) 
+nCombList = which(inputColp$totalEarnings < 350) 
 plotTrialData = T
 plotKMSC= T
 drawTimeSample = T

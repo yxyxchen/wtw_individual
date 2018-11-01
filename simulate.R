@@ -61,7 +61,6 @@ QStarModel = function(para, MSPara, otherPara, cond){
           vaQuit = ws[onsetXs] * gamma^(iti / stepDuration) # didn't consider iTi, to stop getting things to complex
           vaWait = ws[xs];
           vaQuits[t, tIdx] = vaQuit;
-          vaWaits[t, tIdx] = vaWait;
           
           # determine action
           waitRate = exp(vaWait * tau) / sum(exp(vaWait * tau)  + exp(vaQuit * tau) )
@@ -104,6 +103,9 @@ QStarModel = function(para, MSPara, otherPara, cond){
                                           ifelse(action == 'wait', vaWait, vaQuit)
           # anything wrong with the delta here?
           ws = ws + phi * delta * es
+          
+          # save changes in vaWaits, so vaWaited updated at t is used for t+1
+          vaWaits[t, tIdx + 1] = ws[t];
           
           # update xs and stepGap
           xs = nextXs

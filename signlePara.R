@@ -19,28 +19,18 @@ tMax = otherPara[['tMax']]
 trialTick = trialTicks[[condName]]
 
 # initial space
-nPara = 5
-nValue = 3
-tMax = otherPara[['tMax']]
-initialSpace = matrix(NA, nValue^nPara, nPara)
-initialSpace[,1] = rep(seq(0.2, 0.8, 0.3), each = nValue^(nPara - 1)) # phi
-initialSpace[,2] = rep(rep(seq(8,24, 8), each = nValue), nValue^(nPara - 2)) # tau
-initialSpace[,3] = rep(rep(seq(0.90, 0.98, 0.04), each = nValue^2), nValue^(nPara - 3)) 
-initialSpace[,4] = rep(rep(seq(0.90, 0.98, 0.04), each = nValue^3), nValue^(nPara - 4)) 
-initialSpace[,5] = rep(rep(seq(2, 8, 3), each = nValue^4), nValue^(nPara - 5)) 
-
+load('QStarData/initialSpace.RData')
 ########### simulate #############
-combIdx = 192
-rIdx = 2
+combIdx = 151#151, 152
 stepDuration = 0.5;
 
 #  [1] 160 192 195 196 197 198 213 215 217 218 219 220 221 222 223 224 225 226 227
 # 228 229 230 231 232 233 234 235 236 237 238 239 240 241 242 243
 para = initialSpace[combIdx,] 
-para[5] = 3
+para[1] = 0.2
 
 
-tempt = ManualModel(para, MSPara, otherPara, cond)
+tempt = QStarModel(para, MSPara, otherPara, cond)
 
 # summarise earnings, AUC, wtw 
 totalEarnings = sum(tempt$trialEarnings)
@@ -90,15 +80,16 @@ gamma = para[3]
 nTimeStep = otherPara$tMax / otherPara$stepDuration
 
 vaWaits[is.na(vaWaits[,1]),1] = rep(wIni, sum(is.na(vaWaits[,1])))
-vaQuits[is.na(vaQuits[,1]),1] = rep(wIni * gamma ^ (iti / stepDuration),
-                                    sum(is.na(vaQuits[,1])))
 
 for(i in 2 : endTick){
   vaWaits[is.na(vaWaits[,i]),i] = vaWaits[is.na(vaWaits[,i]),i-1]
-  vaQuits[is.na(vaQuits[,i]),i] = vaQuits[is.na(vaQuits[,i]),i-1]
 }
 
-for(i in 2 : endTick){
+for(i in 1 : endTick){
+  vaQuits[is.na(vaQuits[,i]),i] = vaQuits[match(NA, vaQuits[,i]) -1,i]
+}
+
+for(i in 20: endTick){
   cIdx = i
   plotData = data.frame(va =c(vaWaits[,cIdx], vaQuits[,cIdx]),
                         time = rep( 1 : (otherPara$tMax / otherPara$stepDuration), 2),
@@ -107,8 +98,16 @@ for(i in 2 : endTick){
   label = sprintf('last, rwd = %d, tw = %.2f; rwd = %d, tw =%.2f',
                   tempt$trialEarnings[i-1], waitDuration[i-1],
                   tempt$trialEarnings[i], waitDuration[i])
+  if(is.na(tempt$timeWaited[i] )){
+    int_num = floor(tempt$rewardDelays[i]) 
+    endStep =  tempt$rewardDelays[i] + 0.5  + 0.5 * ((tempt$rewardDelays[i] - int_num) > 0.5)
+    endStep = endStep / stepDuration
+  }else{
+    endStep = tempt$timeWaited[i] / stepDuration
+  }
+  
   p = ggplot(plotData, aes(time, va, color = action)) + geom_line() +
-    geom_vline(xintercept = match(NA,tempt$vaWaits[,i])) +
+    geom_vline(xintercept = endStep) +
     ggtitle(label) + xlab('step') 
   # plotData$waitProb = waitProb[,i]
   # p = ggplot(plotData[plotData$action == 'wait',], aes(time, waitProb)) + geom_line()+
