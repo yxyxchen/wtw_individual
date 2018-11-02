@@ -8,7 +8,7 @@ source('helperFxs.R')
 source('simulateViewer.R')
 ################ selec condition ################
 # cond input
-condIdx = 2
+condIdx = 1
 cond = conditions[condIdx];
 condName = conditionNames[condIdx]
 condColor = conditionColors[condIdx]
@@ -90,7 +90,7 @@ for(i in 1 : endTick){
 }
 
 for(i in 20: endTick){
-  cIdx = i
+  cIdx = 50
   plotData = data.frame(va =c(vaWaits[,cIdx], vaQuits[,cIdx]),
                         time = rep( 1 : (otherPara$tMax / otherPara$stepDuration), 2),
                         action = rep(c('wait', 'quit'),
