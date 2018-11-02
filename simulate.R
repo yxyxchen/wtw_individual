@@ -99,7 +99,7 @@ QStarModel = function(para, MSPara, otherPara, cond){
           # go to the terminate state if at the final step or quit or reward arrives
           trialGoOn= (action == 'wait' && !rewardOccur && t < nAvaStep)
           if(trialGoOn){
-            nextXs = dnorm(traceValues[t + 1], MSMus, sigma) * sigma * traceValues[t + 1]
+            nextXs = xsList[t+1,]
           }else{
             nextXs  = onsetXs
           }
