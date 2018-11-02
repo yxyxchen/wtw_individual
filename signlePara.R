@@ -17,20 +17,12 @@ condName = conditionNames[condIdx]
 condColor = conditionColors[condIdx]
 sprintf('Condition : %s %s', cond, condName)
 
-# get input
-if(condName == 'HP') inputRaw = rawHPData else inputRaw = rawLPData 
 
 ########### extract raw data #############
 combIdx = 29
-rIdx = 2
-
 para = initialSpace[combIdx,]
-tempt = list(ws = inputRaw$ws[combIdx, rIdx,],
-             timeWaited = inputRaw$timeWaited[combIdx, rIdx,],
-             rewardDelays = inputRaw$rewardDelays[combIdx, rIdx,],
-             trialEarnings = inputRaw$trialEarnings[combIdx, rIdx,],
-             vaWaits = inputRaw$vaWaits[combIdx, rIdx, , ],
-             vaQuits = inputRaw$vaQuits[combIdx, rIdx, , ])
+MSPara = getMSPara(cond, stepDuration, nMS, traceValues, sigma)
+OtherPara = getOtherPara(cond, stepDuration)
 tempt = QStarModel(para, MSPara, otherPara, cond)
 
 # check ws
