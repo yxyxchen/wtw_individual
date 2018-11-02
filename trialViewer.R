@@ -24,7 +24,7 @@ tMax = tMaxs[condIdx]
 trialTick = trialTicks[[condIdx]] # so here if use [2] then get a list
 # choose combs you want to plot
 nCombList = which(inputColp$AUC <= 6 & inputColp$AUC >= 2) # combs supposed to earn most 
-nCombList = which(inputColp$totalEarnings < 350) 
+nCombList = which(inputColp$AUC > 10 ) 
 plotTrialData = T
 plotKMSC= T
 drawTimeSample = T
@@ -102,8 +102,9 @@ for (nCb in 1 : length(nCombList)){
 
 
 ############ compare to exp data #######
+load('expData/groupData.RData')
 nCombList = which(groupData$AUC <= 6 & groupData$AUC >= 2 & groupData$condition == 'LP')
-nCombList = which(groupData$totalEarnings < 200 & groupData$condition == 'HP')
+nCombList = which(groupData$totalEarnings > 420 & groupData$condition == 'LP')
 # nCombList = 160
 for(nCb in 1 : length(nCombList)){
   idx = nCombList[nCb]
@@ -118,8 +119,8 @@ for(nCb in 1 : length(nCombList)){
   thisTrialData = thisTrialData[thisBlockIdx,]
   thisFunction = unique(thisTrialData$trial_function)
   label = sprintf('Subject %s, earn %d, AUC %.2f)',thisID,
-                  groupData$totalEarnings[sIdx * (2 -1) + bkIdx],
-                  groupData$AUC[sIdx * (2 -1) + bkIdx])
+                  groupData$totalEarnings[idx],
+                  groupData$AUC[idx])
   
   tMax = ifelse(thisCond == conditionNames[1], tMaxs[1], tMaxs[2])
   kmGrid = seq(0, tMax, by=0.1) # grid on which to average survival curves.

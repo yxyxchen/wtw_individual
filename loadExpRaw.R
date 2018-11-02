@@ -8,7 +8,7 @@
 #  empty *keytimes.txt file, a vestige of the effort key-pressing version. 
 
 
-load = function() {
+loadExpRaw = function() {
 
   ##### step 1: load all header files
   # look for header files in the data directory

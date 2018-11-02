@@ -4,14 +4,14 @@
 # outFile 
 outFile = 'exp_figures'
 # analysis sub-functions
-source('load.R')
+source('loadExpRaw.R')
 source('helperFxs.R')
 library("ggplot2")
 library('dplyr')
 source("plotTheme.R")
 source("wtwSettings.R")
 # load all data
-allData = load()
+allData = loadExpRaw()
 hdrData = allData$hdrData             # unpack header data
 # data frame with variables "ID", "Cbal", "Condition1", "Condition2"
 trialData = allData$trialData         # unpack trial data
