@@ -100,4 +100,22 @@ for(c in 1: 2){
 fileName = sprintf('%s/hdrData.RData', outFile)
 save(hdrHPData, hdrLPData, file = fileName)
 
-
+######## generate xsList ######
+xsLists = list()
+for(c in 1: 2){
+  if(c == 1) hdrData = hdrHPData else hdrData = hdrLPData
+  cond = conditions[c]
+  nMS = hdrData$nMS
+  traceValues = hdrData$traceValues
+  MSMus = hdrData$MSMus
+  sigma = hdrData$sigma
+  nTimeStep = hdrData$nTimeStep
+  
+  output = matrix(NA, nTimeStep, nMS)
+  for(i in 1 : nTimeStep){
+    output[i,] = dnorm(traceValues[i], MSMus, sigma) * sigma * traceValues[i]
+  }
+  xsLists[[cond]]= output
+}
+fileName = sprintf('%s/xsLists.RData', outFile)
+save('xsLists', file = fileName)

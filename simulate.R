@@ -10,6 +10,9 @@ QStarModel = function(para, MSPara, otherPara, cond){
   # task para
   source('taskFxs.R')
   source("wtwSettings.R")
+  load('QStarData/xsLists.RData')
+  xsList = xsLists[[cond]]
+
   
   # read otherPara
   tMax= otherPara[['tMax']]
@@ -35,7 +38,7 @@ QStarModel = function(para, MSPara, otherPara, cond){
   #ws = rep(0, nMS) # weight vector for "wait"
   #ws[1] = wIni # encourage explore at first
   es = rep(0, nMS); # es vector for "wait"
-  onsetXs = dnorm(traceValues[1], MSMus, sigma) * sigma * traceValues[1]
+  onsetXs = xsList[1,]
   xs = onsetXs
   
   # additionally initialize vaWaits and vaQuits
@@ -128,6 +131,11 @@ QStarModel = function(para, MSPara, otherPara, cond){
             break
           }
         }  # one trial end
+        #
+        if(t < nTimeStep){
+          vaWaits[(t+1) : nTimeStep] = xsList[(t+1) : nTimeStep,] %*% ws          
+        }
+        # update totalSecs
         totalSecs = totalSecs + iti+ ifelse(getReward, rewardDelay, timeWaited[tIdx])
         endTimes[tIdx] = totalSecs
       } # simulation end
