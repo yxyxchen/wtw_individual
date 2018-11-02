@@ -127,27 +127,8 @@ plotData$condition = rep(c('HP', 'LP'), each = length(colpHPData$totalEarnings))
 plotData = plotData %>% arrange(totalEarnings) %>%group_by(condition) %>%
   mutate(earningRank = rank(totalEarnings, ties.method = "first"))
 
-ggplot(plotData, aes(condition, AUC)) + geom_jitter(aes(color =  earningRank ), size = 4) +
-  scale_color_gradient(low="red", high="yellow", name = 'Earning ranking') +
-  geom_segment(aes(x= 0.7, xend = 1.3, y=optimWaitTimes$HP,yend=optimWaitTimes$HP), size = 2) +
-  geom_segment(aes(x= 1.7, xend = 2.3, y=optimWaitTimes$LP,yend=optimWaitTimes$LP), size = 2) + saveTheme
-fileName = file.path(outFile, "acuCompare.pdf")
-ggsave(fileName, width = 12, height = 8)
 
 #### plot AUCLP and earningsLP
-plotData = rbind(as.data.frame(colpHPData[c(1,5,6,7)]),
-                 as.data.frame(colpLPData[c(1,5,6,7)]))
-plotData$condition = rep(c('HP', 'LP'), each = length(colpHPData$totalEarnings))
-
-plotData = plotData %>% arrange(totalEarnings) %>%group_by(condition) %>%
-  mutate(earningRank = rank(totalEarnings, ties.method = "first"))
-
-ggplot(plotData, aes(condition, AUC)) + geom_jitter(aes(color =  earningRank ), size = 4) +
-  scale_color_gradient(low="red", high="yellow", name = 'Earning ranking') +
-  geom_segment(aes(x= 0.7, xend = 1.3, y=optimWaitTimes$HP,yend=optimWaitTimes$HP), size = 2) +
-  geom_segment(aes(x= 1.7, xend = 2.3, y=optimWaitTimes$LP,yend=optimWaitTimes$LP), size = 2) + saveTheme
-fileName = file.path(outFile, "acuCompare.pdf")
-ggsave(fileName, width = 12, height = 8)
 
 ggplot(plotData[plotData$condition == 'LP',], aes(AUC, totalEarnings)) + geom_point(size = 1.5) +
   saveTheme + ylab('Total earnings') + xlim(c(0, tMaxs[2])) + ylim(c(0, 500))
@@ -158,39 +139,7 @@ ggplot(plotData[plotData$condition == 'HP',], aes(AUC, totalEarnings)) + geom_po
   saveTheme + ylab('Total earnings') + xlim(c(0, tMaxs[1])) + ylim(c(0, 500))
 fileName = file.path(outFile, "AUCHP_earningsHP.pdf") 
 ggsave(fileName, width = 6, height = 4)
-#### wtw
-ggplot(plotData, aes(condition, wtw)) + geom_jitter(aes(color =  earningRank ), size = 4) +
-  scale_color_gradient(low="red", high="yellow", name = 'Earning ranking') +
-  geom_segment(aes(x= 0.7, xend = 1.3, y=optimWaitTimes$HP,yend=optimWaitTimes$HP), size = 2) +
-  geom_segment(aes(x= 1.7, xend = 2.3, y=optimWaitTimes$LP,yend=optimWaitTimes$LP), size = 2) + saveTheme
-fileName = file.path(outFile, "wtwCompare.pdf")
-ggsave(fileName, width = 12, height = 8)
 
-
-### timeWaited
-
-ggplot(plotData, aes(condition, timeWaited)) + geom_jitter(aes(color =  earningRank ), size = 4) +
-  scale_color_gradient(low="red", high="yellow", name = 'Earning ranking') +
-  geom_segment(aes(x= 0.7, xend = 1.3, y=optimWaitTimes$HP,yend=optimWaitTimes$HP), size = 2) +
-  geom_segment(aes(x= 1.7, xend = 2.3, y=optimWaitTimes$LP,yend=optimWaitTimes$LP), size = 2) + displayTheme
-fileName = file.path(outFile, "timeWaited.pdf")
-ggsave(fileName, width = 12, height = 8)
-
-#### check immediete quit
-# HP 
-a = (rawHPData$timeWaited == 0) & (rawHPData$rewardDelays != 0)
-sum(a[!is.na(a)]) / 5 / 243
-endTicks = apply(rawHPData$rewardDelays, MARGIN = c(1,2),
-                 FUN = function(x) match(0, x) - 1)
-sum(a[!is.na(a)]) / (5 * 243 * mean(endTicks))
-
-
-# LP
-a = (rawLPData$timeWaited == 0) & (rawLPData$rewardDelays != 0)
-sum(a[!is.na(a)]) / 5 / 243
-endTicks = apply(rawLPData$rewardDelays, MARGIN = c(1,2),
-                 FUN = function(x) match(0, x) - 1)
-sum(a[!is.na(a)]) / 5 / 243 / mean(endTicks)
 
 #### check wtw change
 # HP

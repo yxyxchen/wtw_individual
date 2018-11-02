@@ -8,7 +8,8 @@ source('helperFxs.R')
 ## outFile
 outFile = 'QStarData'
 ############# load raw data
-load('QStarData/rawData.RData')
+load('QStarData/rawHPData.RData')
+load('QStarData/rawLPData.RData')
 load('QstarData/hdrData.RData')
 
 ############ calculate colpData
@@ -86,15 +87,15 @@ colpTimeWaited = list()
 for(c in 1:2){
   condName = conditionNames[c]
   if(condName == 'HP') inputData = rawHPData else  inputData = rawLPData 
-  output = matrix(NA, length(colpHPData$AUC), 5)
-  for(i in 1 : length(colpHPData$AUC)){
+  output = matrix(NA, dim(rawHPData$ws)[1], 5)
+  for(i in 1 :dim(rawHPData$ws)[1]){
     for(j in 1 : 5){
       timeWaited = inputData[['timeWaited']][i, j, 1 : endTicks[i,j]]
       output[i, j] = mean(timeWaited[!is.na(timeWaited)])
     }
   } 
   output = rowSums(output) / ncol(output)
-  if(condName == 'HP') colpTimeWaited$HP = output else colpTimeWaited$LP = output
+  if(condName == 'HP') colpTimeWaited$HP = output else colpTimeWaited[[condName]]= output
 }
 
 
