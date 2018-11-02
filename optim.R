@@ -78,10 +78,11 @@ outputData = list("ws" = Ws, "timeWaited" = TimeWaited,
                  )
 outFile = 'QStarData'
 if(cond == "unif16") rawHPData = outputData else rawLPData = outputData   
-fileName = sprintf('%s/rawData.RData', outFile)
-save(rawHPData,rawLPData, file = fileName) 
+fileName = sprintf('%s/rawHPData.RData', outFile)
+save(rawHPData,file = fileName) 
 
-
+fileName = sprintf('%s/rawLPData.RData', outFile)
+save(rawLPData,file = fileName) 
 ######## generate hdrData ######
 # hdrData include otherPara, MSPara
 # also nTimeStep and TraceValue 
