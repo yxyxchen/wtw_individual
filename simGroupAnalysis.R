@@ -1,23 +1,24 @@
-# this script is for 
+# this script analysized the simulation data on the group level
 
-# outFile
-outFile = 'QStar_figures'
+############ load data and functions #########
 # library
 library("ggplot2")
 library("dplyr")
 library("tidyr")
 library('scales')
-source('plotTheme.R')
-source('wtwSettings.R')
+source(file = './subFxs/plotTheme.R')
+source(file = './subFxs/wtwSettings.R')
 
-# initialSpace
-load('QStarData/initialSpace.RData')
+# load the para space of the simulation
+load('outputs/QStarData/initialSpace.RData')
 
-#### 
-load('QStarData/colpData.RData')
-load('QStarData/rawWTW.RData')
-load('QStarData/hdrData.RData')
-####
+# load simulation data 
+load('outputs/QStarData/colpData.RData')
+load('outputs/QStarData/rawWTW.RData')
+load('outputs/QStarData/hdrData.RData')
+
+# define output file
+outFile = 'outputs/QStar_figures'
 
 ####### plot distribution of totalEarnings
 plotData = data.frame(totalEarnings = c(colpHPData$totalEarnings, colpLPData$totalEarnings),
@@ -42,6 +43,7 @@ summaryData = data.frame(condition = rep(c("HP", "LP"), each = nValue, nPara),
                          paraNames = rep(paraNames, each = nValue * 2),
                          paraValues = rep(paraValues, nPara * 2))
 summaryData$paraNames = factor(summaryData$paraNames, levels = paraNames)
+
 # summarise mu and sd
 mu = rep(NA, nrow(summaryData))
 std = rep(NA, nrow(summaryData))
@@ -60,7 +62,7 @@ summaryData$std = std
 summaryData$ymin = mu - std
 summaryData$ymax = mu + std
 
-# plot for HP
+# plot 
 for(c in 1:2){
   cond = conditionNames[c]
   ggplot(summaryData[summaryData$condition == cond,], aes(factor(paraValues), mu)) +
@@ -71,78 +73,28 @@ for(c in 1:2){
   ggsave(fileName, width = 16, height = 8) 
 }
 
-############ look at actionValues group by totalEanrings #########
-perc = 0.1
-nUse= floor(nComb* perc);
-rankings = c('Top', 'Bottom')
-
-for(c in 1 : 2){
-  cond = conditions[c]
-  condName = conditionNames[c]
-  condColor = conditionColors[c]
-  
-  if(condName == 'HP'){
-    hdrData = hdrHPData
-    inputData = colpHPData
-  }else{
-    hdrData = hdrLPData
-    inputData = colpLPData  
-  }
-  
-  for(r in 1:2){
-    ranking = rankings[r]
-    tempt = order(inputData$totalEarnings, decreasing = (ranking == 'Top'))
-    UseVaWaits = inputData$vaWaits[tempt[1:nUse],]
-    UseVaQuits= inputData$vaQuits[tempt[1:nUse],]
-
-
-    # plot
-    vas = cbind(UseVaWaits, UseVaQuits)
-    meanValues = apply(vas, FUN = function(x) mean(x[!is.na(x)]), MARGIN = 2)
-    stdValues = apply(vas, FUN = function(x) sd(x[!is.na(x)]), MARGIN = 2)
-    maxValues = meanValues + stdValues
-    minValues = meanValues - stdValues
-    actions = factor(rep(c('wait', 'quit'), each = hdrData$nTimeStep), levels = c('wait', 'quit'))
-    plotData = data.frame(meanValues, stdValues, maxValues, minValues, 
-                          timeSteps = rep(seq(1,hdrData$nTimeStep),2), actions )
-    graphics.off()
-    titleText = sprintf("%s, %s%s total earnings",condName, ranking, percent(perc))
-    ggplot(plotData, aes(timeSteps, meanValues, linetype = actions)) + 
-      geom_ribbon(data = plotData[plotData$actions == 'wait',], aes(ymin=minValues, ymax=maxValues),linetype=0, alpha = 0.1, color = "#bababa") +
-      geom_ribbon(data = plotData[plotData$actions == 'quit',], aes(ymin=minValues, ymax=maxValues),linetype=0, alpha = 0.1, color = "#bababa") + 
-      geom_line(color = conditionColors[c], size = 1) + xlab('Time step') + ylab('Action value') + ggtitle(titleText)+ saveTheme +
-      scale_linetype_discrete(name = "Action") 
-    #coord_cartesian(ylim=c(-2,5))
-    fileName = sprintf('%s/actionValue%s%s.pdf', outFile, condName, ranking)
-    ggsave(file = fileName, width = 10, height = 6)
-  }
-}
-
-######### plot aucCompare and wtwCompare #######
-
+######### plot AUC against totalEarnings #######
+# prepare data
 plotData = rbind(as.data.frame(colpHPData[c(1,5,6,7)]),
                  as.data.frame(colpLPData[c(1,5,6,7)]))
 plotData$condition = rep(c('HP', 'LP'), each = length(colpHPData$totalEarnings))
-
 plotData = plotData %>% arrange(totalEarnings) %>%group_by(condition) %>%
   mutate(earningRank = rank(totalEarnings, ties.method = "first"))
 
-
-#### plot AUCLP and earningsLP
-
+# plot for LP
 ggplot(plotData[plotData$condition == 'LP',], aes(AUC, totalEarnings)) + geom_point(size = 1.5) +
   saveTheme + ylab('Total earnings') + xlim(c(0, tMaxs[2])) + ylim(c(0, 500))
 fileName = file.path(outFile, "AUCLP_earningsLP.pdf") 
 ggsave(fileName, width = 6, height = 4)
 
+# plot for HP
 ggplot(plotData[plotData$condition == 'HP',], aes(AUC, totalEarnings)) + geom_point(size = 1.5) +
   saveTheme + ylab('Total earnings') + xlim(c(0, tMaxs[1])) + ylim(c(0, 500))
 fileName = file.path(outFile, "AUCHP_earningsHP.pdf") 
 ggsave(fileName, width = 6, height = 4)
 
 
-#### check wtw change
-# HP
+######## plot the timeseries of wtw #######
 meanValues = c(apply(rawWTW$HP, MARGIN = 3, FUN = mean), 
                apply(rawWTW$LP, MARGIN = 3, FUN = mean))
 stdValues = c(apply(rawWTW$HP, MARGIN = 3, FUN = sd), 
@@ -160,9 +112,9 @@ ggplot(plotData, aes(time, meanValues, color = condition)) +
 fileName = file.path(outFile, "wtwTimeSeries.pdf")
 ggsave(fileName, width = 12, height = 8)
 
-# check out how the model responde to environments 
+########### plot HPAUC against LPAUC ##############
 plotData = data.frame(HPAUC = colpHPData$AUC, LPAUC = colpLPData$AUC)
 ggplot(plotData, aes(HPAUC, LPAUC)) + geom_point(shape = 3 ) + geom_smooth(method = lm) +
   xlab('HP AUC/s') + ylab("LP AUC /s") + saveTheme
-fileName = file.path(outFile, "responsiveness.pdf")
+fileName = file.path(outFile, "HPAUC_LPAUC.pdf")
 ggsave(fileName, width = 8, height = 8)
