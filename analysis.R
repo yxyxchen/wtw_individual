@@ -23,8 +23,8 @@ cat('Analyzing data for n','=',n,'subjects.\n')
 # 
 # control which individual-level plots to generate
 plotScheduledDelays = F
-plotTrialwiseData = F
-plotKMSC = F
+plotTrialwiseData = T
+plotKMSC = T
 plotRT = F
 plotWTW = F
 plotTimeEarnings = F
@@ -50,75 +50,81 @@ cumEarn = matrix(NA, 9001, n * 2)
 # aucLP = numeric(length=n)
 
 # descriptive statistics for individual subjects and blocks
-for (sIdx in 1:n) {
+for (sIdx in 14:n) {
   thisID = allIDs[sIdx]
   # pull this subject's data
   for (bkIdx in 1:2){
     thisTrialData = trialData[[thisID]]
     thisCond = unique(thisTrialData$condition)
-    thisBlockIdx = (thisTrialData$blockNum == bkIdx)
-    thisTrialData = thisTrialData[thisBlockIdx,]
-    thisFunction = unique(thisTrialData$trial_function)
-    label = sprintf('Subject %s, Cond %s, Fun %s)',thisID, thisCond, thisFunction)
-    
-    #
-    tMax = ifelse(thisCond == conditionNames[1], tMaxs[1], tMaxs[2])
-    kmGrid = seq(0, tMax, by=0.1) # grid on which to average survival curves.
-    tGrid = seq(0, blockSecs, by = 0.1)
-    
-    #  summarise Cond and Fun in this block
-    if(bkIdx == 1){condByBlock[sIdx*2 - 1] = thisCond}
-    if(bkIdx == 2){condByBlock[sIdx*2] = thisCond}
-    if(bkIdx == 1){FunctionByBlock[sIdx*2 - 1] = thisFunction}
-    if(bkIdx == 2){FunctionByBlock[sIdx*2] = thisFunction}
-    
-    # summarise earnings in this block
-    if(bkIdx == 1){earningsByBlock[sIdx*2 - 1] = sum(thisTrialData$trialEarnings)}
-    if(bkIdx == 2){earningsByBlock[sIdx*2] = sum(thisTrialData$trialEarnings)}
-
-    # plot trial-by-trial data
-    if (plotTrialwiseData) {
-      trialPlots(thisTrialData,label)
-    }
-    
-    # survival analysis
-    kmscResults = kmsc(thisTrialData,tMax,label,plotKMSC,kmGrid)
-    if(bkIdx == 1){grpAUC[sIdx*2 -1] = kmscResults[['auc']]}
-    if(bkIdx == 2){grpAUC[sIdx*2] = kmscResults[['auc']]}
-    
-    # save the full AUC in the appropriate place
-    # if (thisCond=='rising' & bkIdx<=2) {sc_rising1[sIdx,] = kmscResults[['kmOnGrid']]}
-    # if (thisCond=='falling' & bkIdx<=2) {sc_falling1[sIdx,] = kmscResults[['kmOnGrid']]}
-    # if (thisCond=='rising' & bkIdx>=3) {sc_rising2[sIdx,] = kmscResults[['kmOnGrid']]}
-    # if (thisCond=='falling' & bkIdx>=3) {sc_falling2[sIdx,] = kmscResults[['kmOnGrid']]}
-    # 
-    # WTW time series - for an individual block. 
-    wtwCeiling = tMax
-    # (e.g., 2 perfectly patient individuals could have different results depending what max time they got)
-    wtwtsResults = wtwTS(thisTrialData, tGrid, wtwCeiling, label, plotWTW)
-    if(bkIdx == 1) wtw[,sIdx * 2 -1] = wtwtsResults else wtw[,sIdx * 2] = wtwtsResults
-    # ***Other possible metrics
-    #     width or inflection point of the KMSC (sigmoid fit?)
-    #     slope or lower bound of the WTW function. spline fit?
-    #     2nd-half AUC
-    
-    # calculate timeEarnings 
-    timeEarnings = getTimeEarnings(thisTrialData, tGrid, label, plotTimeEarnings)
-    if(bkIdx == 1) cumEarn[,sIdx * 2 -1] = timeEarnings else cumEarn[,sIdx * 2] = timeEarnings
-    
-    plotData = data.frame(trialNum = thisTrialData$trialNum,
-                          cumEarnings = cumsum(thisTrialData$trialEarnings))
-    
-    if(plotTrialEarnings){
-      p = ggplot(plotData, aes(trialNum, cumEarnings)) + geom_line()   
-      print(p)
-    }
-
-    
-    # wait for input before continuing, if individual plots were requested
-    if (any(plotScheduledDelays, plotTrialwiseData, plotKMSC, plotRT, plotWTW, plotTimeEarnings, plotTrialEarnings)) {
-      readline(prompt = paste('subject',thisID, "block", bkIdx, '(hit ENTER to continue)'))
-      graphics.off()
+    if(thisCond == 'HP'){
+      thisBlockIdx = (thisTrialData$blockNum == bkIdx)
+      thisTrialData = thisTrialData[thisBlockIdx,]
+      thisFunction = unique(thisTrialData$trial_function)
+      label = sprintf('Subject %s, Cond %s, Fun %s)',thisID, thisCond, thisFunction)
+      
+      #
+      tMax = ifelse(thisCond == conditionNames[1], tMaxs[1], tMaxs[2])
+      kmGrid = seq(0, tMax, by=0.1) # grid on which to average survival curves.
+      tGrid = seq(0, blockSecs, by = 0.1)
+      
+      #  summarise Cond and Fun in this block
+      if(bkIdx == 1){condByBlock[sIdx*2 - 1] = thisCond}
+      if(bkIdx == 2){condByBlock[sIdx*2] = thisCond}
+      if(bkIdx == 1){FunctionByBlock[sIdx*2 - 1] = thisFunction}
+      if(bkIdx == 2){FunctionByBlock[sIdx*2] = thisFunction}
+      
+      # summarise earnings in this block
+      if(bkIdx == 1){earningsByBlock[sIdx*2 - 1] = sum(thisTrialData$trialEarnings)}
+      if(bkIdx == 2){earningsByBlock[sIdx*2] = sum(thisTrialData$trialEarnings)}
+      
+      # plot trial-by-trial data
+      if (plotTrialwiseData) {
+        trialPlots(thisTrialData,label)
+      }
+      
+      if (plotTrialwiseData) {
+        readline(prompt = paste('subject',thisID, "block", bkIdx, '(hit ENTER to continue)'))
+        graphics.off()
+      }
+      # survival analysis
+      kmscResults = kmsc(thisTrialData,tMax,label,plotKMSC,kmGrid)
+      if(bkIdx == 1){grpAUC[sIdx*2 -1] = kmscResults[['auc']]}
+      if(bkIdx == 2){grpAUC[sIdx*2] = kmscResults[['auc']]}
+      
+      # save the full AUC in the appropriate place
+      # if (thisCond=='rising' & bkIdx<=2) {sc_rising1[sIdx,] = kmscResults[['kmOnGrid']]}
+      # if (thisCond=='falling' & bkIdx<=2) {sc_falling1[sIdx,] = kmscResults[['kmOnGrid']]}
+      # if (thisCond=='rising' & bkIdx>=3) {sc_rising2[sIdx,] = kmscResults[['kmOnGrid']]}
+      # if (thisCond=='falling' & bkIdx>=3) {sc_falling2[sIdx,] = kmscResults[['kmOnGrid']]}
+      # 
+      # WTW time series - for an individual block. 
+      wtwCeiling = tMax
+      # (e.g., 2 perfectly patient individuals could have different results depending what max time they got)
+      wtwtsResults = wtwTS(thisTrialData, tGrid, wtwCeiling, label, plotWTW)
+      if(bkIdx == 1) wtw[,sIdx * 2 -1] = wtwtsResults else wtw[,sIdx * 2] = wtwtsResults
+      # ***Other possible metrics
+      #     width or inflection point of the KMSC (sigmoid fit?)
+      #     slope or lower bound of the WTW function. spline fit?
+      #     2nd-half AUC
+      
+      # calculate timeEarnings 
+      timeEarnings = getTimeEarnings(thisTrialData, tGrid, label, plotTimeEarnings)
+      if(bkIdx == 1) cumEarn[,sIdx * 2 -1] = timeEarnings else cumEarn[,sIdx * 2] = timeEarnings
+      
+      plotData = data.frame(trialNum = thisTrialData$trialNum,
+                            cumEarnings = cumsum(thisTrialData$trialEarnings))
+      
+      if(plotTrialEarnings){
+        p = ggplot(plotData, aes(trialNum, cumEarnings)) + geom_line()   
+        print(p)
+      }
+      
+      
+      # wait for input before continuing, if individual plots were requested
+      if (any(plotScheduledDelays, plotTrialwiseData, plotKMSC, plotRT, plotWTW, plotTimeEarnings, plotTrialEarnings)) {
+        readline(prompt = paste('subject',thisID, "block", bkIdx, '(hit ENTER to continue)'))
+        graphics.off()
+      }
     }
   } # loop over blocks
 }
