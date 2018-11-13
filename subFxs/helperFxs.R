@@ -1,10 +1,4 @@
-
-# helperFxs.R
-# varying-magnitude WTW
-
-library("ggplot2")
-source("plotTheme.R")
-source("wtwSettings.R")
+# this script contains helper analysis functions 
 
 # check the distribution of scheduled delays
 # ...as measured in number of key presses (for the instrumental version of the task)
@@ -23,7 +17,6 @@ scheduledDelays <- function(blockData,blockLabel) {
 
 # plot trialwise responses in detail
 trialPlots <- function(blockData,blockLabel) {
-  source('plotTheme.R')
   # vectors to be plotted
   rwdIdx = blockData$trialEarnings != 0
   quitIdx = blockData$trialEarnings == 0

@@ -8,9 +8,9 @@ QStarModel = function(para, MSPara, otherPara, cond){
   wIni = para[5]
 
   # task para
-  source('taskFxs.R')
-  source("wtwSettings.R")
-  load('QStarData/xsLists.RData')
+  source('subFxs/taskFxs.R')
+  source("subFxs/wtwSettings.R")
+  load('outputs/QStarData/xsLists.RData')
   xsList = xsLists[[cond]]
 
   
@@ -133,7 +133,7 @@ QStarModel = function(para, MSPara, otherPara, cond){
         }  # one trial end
         #
         if(t < nTimeStep){
-          vaWaits[(t+1) : nTimeStep] = xsList[(t+1) : nTimeStep,] %*% ws          
+          vaWaits[(t+1) : nTimeStep,  tIdx] = xsList[(t+1) : nTimeStep,] %*% ws          
         }
         # update totalSecs
         totalSecs = totalSecs + iti+ ifelse(getReward, rewardDelay, timeWaited[tIdx])

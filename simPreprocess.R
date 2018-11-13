@@ -1,18 +1,22 @@
+# this script preprocesses the simulation data 
+# first, it calculates wtw timeseries and AUC for the simulation data 
+# second, it callopses the simulation data for the later group analysis
+
+
+############# load data and functions ######
+load('outputs/QStarData/rawHPData.RData')
+load('outputs/QStarData/rawLPData.RData')
+load('outputs/QstarData/hdrData.RData')
 library("dplyr")
 library("tidyr")
-library('ggplot2')
-library('scales')
-source('plotTheme.R')
-source('wtwSettings.R')
-source('helperFxs.R')
+source('subFxs/plotThemes.R')
+source('subFxs/wtwSettings.R')
+source('subFxs/helperFxs.R')
 ## outFile
-outFile = 'QStarData'
-############# load raw data
-load('QStarData/rawHPData.RData')
-load('QStarData/rawLPData.RData')
-load('QstarData/hdrData.RData')
+outFile = 'outputs/QStarData'
 
-############ calculate colpData
+
+############ calculate colpData ########
 # colpTrialEarnings 
 colpTrialEarnings = vector(mode = "list", 2)
 colpTotalEarnings = vector(mode = "list", 2)
@@ -28,21 +32,7 @@ for(c in 1 : 2){
                                         MARGIN = 1, FUN = sum)
 }
 
-# colpVaWaits & colpVaQuits
-colpVaWaits = vector(mode = "list", 2)
-colpVaQuits = vector(mode = "list", 2)
-for(c in 1 : 2){
-  cond = conditions[c];
-  condName = conditionNames[c];
-  if(condName == "HP") inputData = rawHPData else inputData = rawLPData
-  
-  colpVaWaits[[condName]]  =  apply(inputData$vaWaits, MARGIN = c(1, 3),
-                                    FUN = function(x) mean(x[!is.na(x)]))
-  colpVaQuits[[condName]]  =  apply(inputData$vaQuits, MARGIN = c(1, 3),
-                                    FUN = function(x) mean(x[!is.na(x)]))
-}
-
-###### AUC data #####
+# colpAUC
 colpAUC = list()
 rawWTW = list()
 for(c in 1 : 2){
@@ -80,42 +70,17 @@ for(c in 1 : 2){
   rawWTW[[condName]] = wtwResult
 }
 
-### timeWaited
-endTicks = apply(rawLPData$rewardDelays, MARGIN = c(1,2),
-                 FUN = function(x) match(0, x) - 1)
-colpTimeWaited = list()
-for(c in 1:2){
-  condName = conditionNames[c]
-  if(condName == 'HP') inputData = rawHPData else  inputData = rawLPData 
-  output = matrix(NA, dim(rawHPData$ws)[1], 5)
-  for(i in 1 :dim(rawHPData$ws)[1]){
-    for(j in 1 : 5){
-      timeWaited = inputData[['timeWaited']][i, j, 1 : endTicks[i,j]]
-      output[i, j] = mean(timeWaited[!is.na(timeWaited)])
-    }
-  } 
-  output = rowSums(output) / ncol(output)
-  if(condName == 'HP') colpTimeWaited$HP = output else colpTimeWaited[[condName]]= output
-}
 
-
-### organize colpHPData
+########## save data #########
 colpHPData = list(totalEarnings = colpTotalEarnings$HP,
                   trialEarnings = colpTrialEarnings$HP,
-                  vaQuits = colpVaQuits$HP,
-                  vaWaits = colpVaWaits$HP,
                   AUC = colpAUC$HP,
-                  timeWaited = colpTimeWaited$HP,
                   wtw = apply(rawWTW$HP, MARGIN = 1, mean))
 colpLPData = list(totalEarnings = colpTotalEarnings$LP,
                   trialEarnings = colpTrialEarnings$LP,
-                  vaQuits = colpVaQuits$LP,
-                  vaWaits = colpVaWaits$LP,
                   AUC = colpAUC$LP,
-                  timeWaited = colpTimeWaited$LP,
                   wtw = apply(rawWTW$LP, MARGIN = 1, mean)
 )
-
 fileName = sprintf("%s/colpData.RData", outFile)
 save('colpLPData', 'colpHPData', file = fileName )
 fileName = sprintf("%s/rawWTW.RData", outFile)

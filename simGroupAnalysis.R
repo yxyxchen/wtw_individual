@@ -6,7 +6,7 @@ library("ggplot2")
 library("dplyr")
 library("tidyr")
 library('scales')
-source(file = './subFxs/plotTheme.R')
+source(file = './subFxs/plotThemes.R')
 source(file = './subFxs/wtwSettings.R')
 
 # load the para space of the simulation
@@ -75,8 +75,8 @@ for(c in 1:2){
 
 ######### plot AUC against totalEarnings #######
 # prepare data
-plotData = rbind(as.data.frame(colpHPData[c(1,5,6,7)]),
-                 as.data.frame(colpLPData[c(1,5,6,7)]))
+plotData = rbind(as.data.frame(colpHPData[c(1,3)]),
+                 as.data.frame(colpLPData[c(1,3)]))
 plotData$condition = rep(c('HP', 'LP'), each = length(colpHPData$totalEarnings))
 plotData = plotData %>% arrange(totalEarnings) %>%group_by(condition) %>%
   mutate(earningRank = rank(totalEarnings, ties.method = "first"))

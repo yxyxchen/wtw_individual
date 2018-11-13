@@ -1,8 +1,6 @@
 
 # getOtherPara organize steoDurations together with timing-variables in wtwSetting
 getOtherPara = function(cond, stepDuration, holdOnsteps = 5){
-  source('wtwSettings.R')
-  # time steps
   tMax = ifelse(cond == conditions[1], tMaxs[1], tMaxs[2])
   
   # check validity of step duration

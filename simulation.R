@@ -1,16 +1,16 @@
 # this simulation using average payoff
 
 ### output file ####
-outFile = 'QStarData'
+outFile = 'outputs/QStarData'
 ################## read data #################
 # library 
 library('ggplot2')
 library('dplyr')
 library('tidyr')
-source('simulate.R') # QStar model
-source('wtwSettings.R') # wtw settings for both HP and LP
+source('model.R') # QStar model
+source('subFxs/wtwSettings.R') # wtw settings for both HP and LP
                         # can't change
-source('getPara.R') # functions to get MSPara and otherPara from inputs and wtwSettings
+source('subFxs/paraFxs.R') # functions to get MSPara and otherPara from inputs and wtwSettings
                     # can change for different MS model, and 
 
 ################ input ################
