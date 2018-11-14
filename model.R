@@ -8,8 +8,8 @@ QStarModel = function(para, MSPara, otherPara, cond){
   wIni = para[5]
 
   # task para
-  source('taskFxs.R')
-  source("wtwSettings.R")
+  source('subFxs/taskFxs.R')
+  source("subFxs/wtwSettings.R")
   
   # read otherPara
   tMax= otherPara[['tMax']]
