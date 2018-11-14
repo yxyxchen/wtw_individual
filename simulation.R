@@ -78,10 +78,10 @@ outputData = list("ws" = Ws, "timeWaited" = TimeWaited,
                  )
 outFile = 'QStarData'
 if(cond == "unif16") rawHPData = outputData else rawLPData = outputData   
-fileName = sprintf('%s/rawHPData.RData', outFile)
+fileName = sprintf('outputs/%s/rawHPData.RData', outFile)
 save(rawHPData,file = fileName) 
 
-fileName = sprintf('%s/rawLPData.RData', outFile)
+fileName = sprintf('outputs/%s/rawLPData.RData', outFile)
 save(rawLPData,file = fileName) 
 ######## generate hdrData ######
 # hdrData include otherPara, MSPara
@@ -98,7 +98,7 @@ for(c in 1: 2){
   hdrData$traceValues = hdrData$traceDecay ^ ( 1 :   hdrData$nTimeStep - 1)
   if(cond == 'unif16') hdrHPData= hdrData else  hdrLPData= hdrData
 }
-fileName = sprintf('%s/hdrData.RData', outFile)
+fileName = sprintf('outputs/%s/hdrData.RData', outFile)
 save(hdrHPData, hdrLPData, file = fileName)
 
 ######## generate xsList ######
@@ -118,5 +118,5 @@ for(c in 1: 2){
   }
   xsLists[[cond]]= output
 }
-fileName = sprintf('%s/xsLists.RData', outFile)
+fileName = sprintf('outputs/%s/xsLists.RData', outFile)
 save('xsLists', file = fileName)
