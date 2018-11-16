@@ -1,19 +1,31 @@
 # unupdated vaWaits were not recorded, so here we manually
 # set them identical with the last updated value
-actionValueViewer = function(vaWaits, vaQuits, blockData){
+actionValueViewer = function(vaWaits, vaQuits, blockData, para){
+  
+  gamma = para[3];
+  wIni = para[5];
+  nTimeStep = nrow(vaQuits);
+  
   # fix vaQuits
-  wIni = vaWaits[1,1]
-  vaWaits[is.na(vaWaits[,1]),1]  = rep(wIni, sum(is.na(vaWaits[,1])))
-    
+  # data updated on trial t is stored in the colclumn t+1
+  if(sum(is.na(vaWaits[,1])) > 0){
+    vaWaits[is.na(vaWaits[,1]),1]  = rep(wIni, sum(is.na(vaWaits[,1])))   
+  }
   for(i in 2 : endTick){
     if(any(is.na(vaWaits[,i]))){
       vaWaits[is.na(vaWaits[,i]),i]  = vaWaits[is.na(vaWaits[,i]),i-1] 
     }
   }
+  
+  # if quit at the first trial
+  if(is.na(vaQuits[1,1])) vaQuit[1,1] =  gamma^ 4 * wIni
+  # refill
   for(i in 1 : endTick){
-    if(any(is.na(vaQuits[,i]))){
+    if(sum(is.na(vaQuits[,i])) > 0 & sum(is.na(vaQuits[,i])) < nTimeStep){
       vaQuits[is.na(vaQuits[,i]),i] = vaQuits[match(NA, vaQuits[,i]) -1,i]
-    }
+    }else if(sum(is.na(vaQuits[,i])) >= nrow(vaQuits)){
+      vaQuits[,i] = rep(vaQuits[nTimeStep,i - 1], nTimeStep)
+    }else{}
   }
   
   # 

@@ -7,6 +7,7 @@ source('subFxs/plotThemes.R')
 source('subFxs/wtwSettings.R')
 source("actionValueViewer.R")
 load('outputs/QStarData/colpData.RData')
+load('outputs/QStarData/initialSpace.RData')
 load('outputs/QStarData/RawHPData.RData')
 load('outputs/QStarData/RawLPData.RData')
 
@@ -100,9 +101,10 @@ for (nCb in 1 : length(nCombList)){
   # plot action value
   # prepare data 
   if(plotActionValue){
+    para = initialSpace[i, ]
     vaWaits = inputRaw$vaWaits[i,j, , ]
     vaQuits = inputRaw$vaQuits[i,j, , ]
-    actionValueViewer(vaWaits, vaQuits, blockData)
+    actionValueViewer(vaWaits, vaQuits, blockData, para)
   }
   
   if(plotActionValue) {

@@ -15,7 +15,7 @@ source('subFxs/paraFxs.R') # functions to get MSPara and otherPara from inputs a
 
 ################ input ################
 # cond input
-condIdx = 2
+condIdx = 1
 cond = conditions[condIdx];
 condName = conditionNames[condIdx]
 condColor = conditionColors[condIdx]
