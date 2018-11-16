@@ -1,10 +1,14 @@
 # unupdated vaWaits were not recorded, so here we manually
 # set them identical with the last updated value
 actionValueViewer = function(vaWaits, vaQuits, blockData){
+  
+  nTimeStep = nrow(vaQuits)
   # fix vaQuits
   for(i in 1 : endTick){
-    if(any(is.na(vaQuits[,i]))){
+    if(sum(is.na(vaQuits[,i])) > 1 & sum(is.na(vaQuits[,i]))  < nTimeStep){
       vaQuits[is.na(vaQuits[,i]),i] = vaQuits[match(NA, vaQuits[,i]) -1,i]
+    }else if(sum(is.na(vaQuits[,i]))  >= nrow(vaQuits)){
+      vaQuits[is.na(vaQuits[,i]),i] = rep(vaQuits[nTimeStep,i-1], nTimeStep )
     }
   }
   

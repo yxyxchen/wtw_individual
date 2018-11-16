@@ -5,13 +5,13 @@ source('subFxs/helperFxs.R')
 library('ggplot2')
 source('subFxs/plotThemes.R')
 source('subFxs/wtwSettings.R')
-source("actionValueViewer.R")
+source("subFxs/actionValueViewer.R")
 load('outputs/QStarData/colpData.RData')
 load('outputs/QStarData/RawHPData.RData')
 load('outputs/QStarData/RawLPData.RData')
 
 ###### choose condition ########3
-condIdx = 2
+condIdx = 1
 cond = conditions[condIdx]
 condName = conditionNames[condIdx]
 
