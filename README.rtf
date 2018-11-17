@@ -1,0 +1,124 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\froman\fcharset0 TimesNewRomanPSMT;}
+{\colortbl;\red255\green255\blue255;\red53\green53\blue53;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker }{\leveltext\leveltemplateid1\'00;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid1}
+{\list\listtemplateid2\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker }{\leveltext\leveltemplateid101\'00;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid2}
+{\list\listtemplateid3\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker }{\leveltext\leveltemplateid201\'00;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid3}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}{\listoverride\listid2\listoverridecount0\ls2}{\listoverride\listid3\listoverridecount0\ls3}}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\deftab720
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\sl288\slmult1\qj\partightenfactor0
+
+\f0\fs24 \cf2 \expnd0\expndtw0\kerning0
+\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\sl288\slmult1\qj\partightenfactor0
+
+\b \cf0 Alert:\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\partightenfactor0
+
+\b0\fs22 \cf0 The simulation data in LP is too large to upload. Please simulate data for the LP condition locally by 
+\b simulation.R
+\b0 . \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\sl288\slmult1\qj\partightenfactor0
+
+\b\fs24 \cf0 \
+General Info:\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\sl288\slmult1\qj\partightenfactor0
+
+\b0 \cf2 This project apples reinforcement learning models to capture individual differences in the wtw task. A TrialFun(Passive / Negtive) x Condition(HP / LP) wtw dataset is used.\
+Four branches implements 4 versions of models:\
+\pard\tx20\tx216\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\li196\fi-197\sl288\slmult1\qj\partightenfactor0
+\ls1\ilvl0\cf0 \kerning1\expnd0\expndtw0 {\listtext	\'95	}\cf2 \expnd0\expndtw0\kerning0
+	
+\b master
+\b0 : Q-learning Model with Microstimuli(MS).\
+\ls1\ilvl0\cf0 \kerning1\expnd0\expndtw0 {\listtext	\'95	}\cf2 \expnd0\expndtw0\kerning0
+	
+\b simple
+\b0 : Q-learning Model with Complete Serial Compound(CSC).\
+\ls1\ilvl0\cf0 \kerning1\expnd0\expndtw0 {\listtext	\'95	}\cf2 \expnd0\expndtw0\kerning0
+	
+\b monteMaster
+\b0 : Monte Carlo Model with MS and a  1/ learning rate.\
+\ls1\ilvl0\cf0 \kerning1\expnd0\expndtw0 {\listtext	\'95	}\cf2 \expnd0\expndtw0\kerning0
+	
+\b monteSimple
+\b0 : Monte Carlo Model with CSC and a 1/n learning rate.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\sl288\slmult1\qj\partightenfactor0
+\cf2 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\sl288\slmult1\qj\partightenfactor0
+
+\b \cf2 Main Functions: \
+\pard\tx20\tx216\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\li196\fi-197\sl288\slmult1\qj\partightenfactor0
+\ls2\ilvl0
+\b0 \cf0 \kerning1\expnd0\expndtw0 {\listtext	\'95	}
+\b \cf2 \expnd0\expndtw0\kerning0
+expAnalysis.R
+\b0 : analysis for experimental data\
+\ls2\ilvl0\cf0 \kerning1\expnd0\expndtw0 {\listtext	\'95	}
+\b \cf2 \expnd0\expndtw0\kerning0
+model.R
+\b0 : learning model\
+\ls2\ilvl0\cf0 \kerning1\expnd0\expndtw0 {\listtext	\'95	}
+\b \cf2 \expnd0\expndtw0\kerning0
+simulation.R
+\b0 : simulation procedure\
+\ls2\ilvl0\cf0 \kerning1\expnd0\expndtw0 {\listtext	\'95	}
+\b \cf2 \expnd0\expndtw0\kerning0
+simPreprocess.R
+\b0 : preprocessing of simulation data, calculating AUC and WTW and average results across repetitive simulations\
+\ls2\ilvl0\cf0 \kerning1\expnd0\expndtw0 {\listtext	\'95	}
+\b \cf2 \expnd0\expndtw0\kerning0
+simGroupAnalysis.R
+\b0 : group analysis for simulation data\
+\ls2\ilvl0\cf0 \kerning1\expnd0\expndtw0 {\listtext	\'95	}
+\b \cf2 \expnd0\expndtw0\kerning0
+simCaseAnalysis.R
+\b0 : case analysis for simulation data
+\f1 \cf0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\sl288\slmult1\qj\partightenfactor0
+
+\f0 \cf0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\sl288\slmult1\partightenfactor0
+
+\b \cf0 Sub Functions:\
+\pard\tx20\tx200\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\li180\fi-180\sl288\slmult1\partightenfactor0
+\ls3\ilvl0
+\b0 \cf0 \kerning1\expnd0\expndtw0 {\listtext	\'95	}
+\b\fs22 \expnd0\expndtw0\kerning0
+loadFx.R: 
+\b0 functions for loading experimental data\
+\ls3\ilvl0
+\fs24 \kerning1\expnd0\expndtw0 {\listtext	\'95	}
+\b\fs22 \expnd0\expndtw0\kerning0
+helpferFxs.R:
+\b0  supplementary analysis functions, like functions for, WTW, plotting trial data eta. \
+\ls3\ilvl0
+\fs24 \kerning1\expnd0\expndtw0 {\listtext	\'95	}
+\b\fs22 \expnd0\expndtw0\kerning0
+taskFxs.R:
+\b0  generate random delays of rewards for the learning model. \
+\ls3\ilvl0
+\fs24 \kerning1\expnd0\expndtw0 {\listtext	\'95	}
+\b\fs22 \expnd0\expndtw0\kerning0
+wtwSettings.R: 
+\b0 setting parameters in the task, like the block duration, the token value, reward rates for quitting at each time point eta. \
+\ls3\ilvl0
+\fs24 \kerning1\expnd0\expndtw0 {\listtext	\'95	}
+\b\fs22 \expnd0\expndtw0\kerning0
+plotThems.R:
+\b0  customized plot themes for ggplot2 \
+\ls3\ilvl0
+\fs24 \kerning1\expnd0\expndtw0 {\listtext	\'95	}
+\b\fs22 \expnd0\expndtw0\kerning0
+ParaFxs.R:
+\b0  generate arguments needed for the learning model \
+\ls3\ilvl0
+\fs24 \kerning1\expnd0\expndtw0 {\listtext	\'95	}
+\b\fs22 \expnd0\expndtw0\kerning0
+actionValueViewer.R:
+\b0  plot action values trial by trial\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\sl288\slmult1\partightenfactor0
+\cf0 \
+}
