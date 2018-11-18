@@ -1,5 +1,5 @@
 # add number of repeation
-QStarModel = function(para, MSPara, otherPara, cond){
+QStarModel = function(para, otherPara, cond){
   # 
   phi = para[1]
   tau = para[2]
@@ -77,7 +77,7 @@ QStarModel = function(para, MSPara, otherPara, cond){
           
           # if rewarded and wait, 5; otherwise, 0
           getReward = (action == 'wait' && rewardOccur);
-          nextReward = ifelse(getReward, 5, 0) 
+          nextReward = ifelse(getReward, tokenValue, 0) 
           
           # dertime next state
           # go to the terminate state if at the final step or quit or reward arrives
@@ -113,7 +113,7 @@ QStarModel = function(para, MSPara, otherPara, cond){
           # break the trial didn't continue
           # return output
           if(!trialGoOn){
-            trialEarnings[tIdx] = ifelse(nextReward == 5, 5, 0);
+            trialEarnings[tIdx] = ifelse(nextReward == tokenValue, tokenValue, 0);
             # if quit, quit at t, if wait, wait until t+1
             timeWaited[tIdx] = ifelse(getReward,NA, ifelse(action == "quit", timeTicks[t], timeTicks[t+1]))
             rewardDelays[tIdx] = rewardDelay
